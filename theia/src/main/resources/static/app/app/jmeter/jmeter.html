@@ -1,0 +1,477 @@
+<ol class="breadcrumb">
+	<li><a href="/theia/#!/view1">Home</a></li>
+	<li class="active">Automated Test Execution and Monitoring</li>
+</ol>
+<br />
+
+<div ng-show="!msg.hidden">
+	<div class="alert fade in" 
+		ng-class="{'alert-success':msg.success, 'alert-info':msg.info, 'alert-warning':msg.warning,
+					'alert-danger':msg.danger}" >
+		<button class="close" data-dismiss="alert">×</button>
+		<i class="fa-fw fa"
+		ng-class="{'fa-exclamation-circle':msg.success, 'fa-exclamation-circle':msg.info, 'fa-exclamation-circle':msg.warning,
+					'fa-exclamation-circle':msg.danger}"></i> {{msg.message}}
+	</div>
+</div>
+
+<br />
+
+<div class="container jmeter-config-pane">
+	<a ng-click="toggle = !toggle">
+		<i class="fa" ng-class="{'fa-minus-square' : !toggle , 'fa-plus-square' : toggle}"></i>
+	</a>
+	<div class="page-header">
+		<h1>Configure JMeter Test Execution and Monitoring</h1><small></small>
+	</div>
+	<!-- NEW WIDGET START -->
+	<article class="col-sm-12 col-md-12 col-lg-8"
+		ng-show="!toggle">
+
+		<!-- Widget ID (each widget will need unique ID)-->
+		<div class="jarviswidget jarviswidget-color-darken" id="wid-id-0"
+			data-widget-editbutton="false" data-widget-deletebutton="false">
+
+			<header>
+				<span class="widget-icon"> <i class="fa fa-check"></i>
+				</span>
+				<h2>Build your JMeter Project</h2>
+
+			</header>
+
+			<!-- widget div-->
+			<div>				
+				<!-- widget edit box -->
+				<div class="jarviswidget-editbox">
+					<!-- This area used as dropdown edit box -->
+
+				</div>
+				<!-- end widget edit box -->
+
+				<!-- widget content -->
+				<div class="widget-body">
+
+					<div class="row">
+						<form id="wizard-1" novalidate="novalidate">
+							<div id="bootstrap-wizard-1" class="col-sm-12">
+								<div class="form-bootstrapWizard">
+
+									<ul class="bootstrapWizard form-wizard">
+										<li class="active" data-target="#step1"><a href="#tab1"
+											data-toggle="tab"> <span class="step">1</span> <span
+												class="title">Provide Host Information</span>
+										</a></li>
+										<li data-target="#step2"><a href="#tab2"
+											data-toggle="tab"> <span class="step">2</span> <span
+												class="title">Select JMeter script and configuration</span>
+										</a></li>
+										<li data-target="#step3"><a href="#tab3"
+											data-toggle="tab"> <span class="step">3</span> <span
+												class="title">Select Monitoring Configuration</span>
+										</a></li>
+										<li data-target="#step4"><a href="#tab4"
+											data-toggle="tab"> <span class="step">4</span> <span
+												class="title">Save and Start Test</span>
+										</a></li>
+									</ul>
+									<div class="clearfix"></div>
+								</div>
+								<div class="tab-content">
+									<div class="tab-pane active" id="tab1">
+										<br>
+										<h3>
+											<strong>Step 1 </strong> - Provide Host Information
+										</h3>
+										
+										<div class="alert alert-warning fade in">
+											<button class="close" data-dismiss="alert">×</button>
+											<i class="fa-fw fa fa-info"></i> Some machines in the list below may be
+											inuse and un-available, please contact <strong>l&p</strong> team for machine reservations. 
+										</div>
+										
+										<div class="row">
+
+											<div class="col-sm-12">
+												<div class="form-group">
+													<div class="input-group">
+														<span class="input-group-addon"><h4>
+																<span class="label label-primary">User
+																	Stage:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+															</h4></span>
+
+														<ui-select ng-model="model.sm" theme="bootstrap"
+															ng-disabled="disabled" title="Choose a Stage Machine"
+															id="smachine"> <ui-select-match
+															placeholder="Select user stage machine...">
+														{{$select.selected.stagename}} </ui-select-match> <ui-select-choices
+															ui-disable-choice="sm.inuse == true || sm.status == false"
+															on-highlight="showSmPreview(sm)"
+															repeat="sm in sms |  filter: $select.search.stagename">
+														<div
+															ng-bind-html="sm.stagename | highlight: $select.search.stagename">
+														</div>
+														</ui-select-choices> </ui-select>
+
+													</div>
+												</div>
+
+											</div>
+
+										</div>
+
+										<div class="row">
+											<div class="col-sm-12">
+												<div class="form-group">
+													<div class="input-group">
+														<span class="input-group-addon"><h4>
+																<span class="label label-primary">Load Generator:</span>
+															</h4></span>
+														<ui-select ng-model="model.lg" theme="bootstrap"
+															on-select=selectedLgEvent($item,$model)
+															ng-disabled="disabled" title="Choose a load generator"
+															id="lgmachine"> <ui-select-match
+															placeholder="Select load generator machine...">
+														{{$select.selected.lgname}} </ui-select-match> <ui-select-choices
+															ui-disable-choice="lg.inuse == true || lg.status == false"
+															on-highlight="showLgPreview(lg)"
+															repeat="lg in lgs |  filter: $select.search">
+														<div ng-bind-html="lg.lgname | highlight: $select.search">
+														</div>
+														</ui-select-choices> </ui-select>
+
+													</div>
+												</div>
+											</div>
+										</div>
+
+									</div>
+
+									<div class="tab-pane" id="tab2">
+										<br>
+										<h3>
+											<strong>Step 2</strong> - Select JMeter Script and
+											Configuration
+										</h3>
+											<div class="alert alert-info fade in">
+												<button class="close" data-dismiss="alert">×</button>
+												<i class="fa-fw fa fa-info"></i> When you select a script, some fields may be auto-populated 
+												based on recommendations from the script owner. 
+										</div>	
+										<div class="form-group">
+											<div class="input-group">
+												<span class="input-group-addon"><h4>
+														<span class="label label-primary">JMeter Scripts :</span>
+													</h4></span>
+												<ui-select ng-model="model.gitlist" theme="bootstrap"
+													ng-disabled="disabled" title="Select a Jmeter Script"
+													id="jmeterscript"> <ui-select-match
+													placeholder="Select a JMeter Script to run...">
+												{{$select.selected.jmx.formattedName}} </ui-select-match> <ui-select-choices
+													repeat="script in gitList |  filter: $select.search">
+												<div
+													ng-bind-html="script.jmx.formattedName | highlight: $select.search">
+												</div>
+												</ui-select-choices> </ui-select>
+											</div>
+										</div>
+
+										<br />
+										<div class="form-inline">
+											<div class="form-group">
+												<div class="input-group">
+													<span class="input-group-addon"><h4>
+															<span class="label label-primary">Duration (s) 
+															<i class="fa fa-question-circle">														
+															</i></span>
+														</h4></span>
+													<div>
+														<input type="text" class="form-control" id="duration"
+															placeholder="seconds"
+															ng-model="model.gitlist.jmx.config.duration">
+													</div>
+													
+												</div>
+												
+												<div class="input-group">
+													<span class="input-group-addon"><h4>
+															<span class="label label-primary">Virtual Users :</span>
+														</h4></span>
+													<div>
+														<input type="text" class="form-control" id="vusers"
+															placeholder="threads"
+															ng-model="model.gitlist.jmx.config.vusers">
+													</div>
+												</div>
+											</div>
+										</div>
+										<br />
+
+										<div class="form-group">
+											<div class="input-group">
+												<span class="input-group-addon"><h4>
+														<span class="label label-primary">Load Test
+															Description: </span>
+													</h4></span>
+												<div>
+													<textarea class="form-control" rows="5"
+														placeholder="Descriptive information for this load test"
+														ng-model="model.description"></textarea>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="input-group">
+												<span class="input-group-addon"><h4>
+														<span class="label label-primary">Command Line
+															Arguments </span>
+													</h4></span>
+												<div>
+													<textarea class="form-control" rows="5"
+														placeholder="Any custom command line params of the format -Dparam.name=value ..."
+														ng-model="model.commandlineparams"></textarea>
+												</div>
+											</div>
+
+										</div>
+									</div>
+									<div class="tab-pane" id="tab3">
+										<br>
+										<h3>
+											<strong>Step 3</strong> - Select Monitoring Configuration
+										</h3>
+										
+										<div class="form-group">
+											<div class="input-group">
+												<span class="input-group-addon"><h4>
+														<span class="label label-primary">Select Monitoring
+															Configuration: </span>
+													</h4></span>
+												<div>
+													<ui-select ng-model="model.sc" theme="bootstrap"
+														ng-disabled="disabled"
+														title="Select a Monitoring Configuration" id="smachine">
+													<ui-select-match
+														placeholder="Select a Monitoring Configuration...">
+													{{$select.selected.name}} </ui-select-match> <ui-select-choices
+														repeat="sc in scs |  filter: $select.search">
+													<div ng-bind-html="sc.name | highlight: $select.search"></div>
+													</ui-select-choices> </ui-select>
+												</div>
+											</div>
+										</div>
+										<br/>
+										<br/>
+										<br/>
+										<br/>
+										<br/>
+										<br/>
+										<br/>
+									</div>
+									<div class="tab-pane" id="tab4">
+										<br>
+										<h3>
+											<strong>Step 4</strong> - Verify and Start JMeter
+										</h3>
+										<br>										
+
+										<div class="form-group">
+											<div class="input-group">
+												<span class="input-group-addon"><h4>
+														<span class="label label-primary">JMeter
+															Configuration: </span>
+													</h4></span>
+												<div>
+													<textarea class="form-control jmeterparams" disabled
+														rows="5" placeholder="">-Dstagename={{model.sm.stagename}} -Dduration={{model.gitlist.jmx.config.duration}} -Dvusers={{model.gitlist.jmx.config.vusers}} {{model.commandlineparams}} -t {{model.gitlist.jmx.path}}
+							</textarea>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="input-group">
+												<span class="input-group-addon"><h4>
+														<span class="label label-primary">System Monitoring
+															Configuration: </span>
+													</h4></span>
+												<div>
+													<input type="text" class="form-control" id="sc"
+														disabled ng-model="model.sc.name">
+												</div>
+											</div>
+										</div>
+										
+										<h1 class="text-center text-success">
+											<strong><i class="fa fa-check fa-lg"></i> Complete</strong>
+										</h1>
+
+										<br> <br>
+									</div>
+
+									<div class="form-actions">
+										<div class="row">
+											<div class="col-sm-12">
+												<ul class="pager wizard no-margin">
+													<!--<li class="previous first disabled">
+																		<a href="javascript:void(0);" class="btn btn-lg btn-default"> First </a>
+																		</li>-->
+													<li class="previous disabled"><a
+														href="javascript:void(0);" class="btn btn-lg btn-default">
+															Previous </a></li>
+													<!--<li class="next last">
+																		<a href="javascript:void(0);" class="btn btn-lg btn-primary"> Last </a>
+																		</li>-->
+													<li class="next"><a href="javascript:void(0);"
+														class="btn btn-lg txt-color-darken" ng-click="goNext()" ng-disabled="{{disableNextBtn}}"> Next </a></li>
+													
+													<li class="next finish" style="display:none;">
+														<a data-toggle="modal" data-target="#intermediateModal"
+															data-keyboard="false" data-backdrop="static"
+															class="btn btn-lg btn-success" ng-click="startJmeter()" href="theia/#!/jmeter#results">
+															<i class="fa fa-play">&nbsp;</i>Start
+														</a>
+													</li>																										
+												</ul>
+											</div>
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</form>
+					</div>
+
+				</div>
+				<!-- end widget content -->
+
+			</div>
+			<!-- end widget div -->
+
+		</div>
+		<!-- end widget -->
+	</article>
+	<!-- WIDGET END -->
+	<article class="col-lg-4" ng-show="!toggle">
+	<br/>
+	<br/>
+	<br/>
+	<br/>
+	<br/>
+	<br/>
+<!-- 	<pre>{{model | json }}</pre>  -->
+		<table class="table table-bordered table-striped table-condensed" ng-show="model.gitlist.jmx.config">
+			<thead> 
+				<tr class="jmetermetadataheader"><th colspan="2"> <i class="fa fa-info">&nbsp;&nbsp;JMeter Script Meta Data </th></tr>
+			</thead>
+				
+			<tbody class="jmetermetadata">
+			<tr ng-repeat="(key,value) in model.gitlist.jmx.config" class="animate-repeat">
+					<td><strong>{{key | titleCase}}</strong></td><td>{{value}}</td>
+			</tr>
+			</tbody>
+		
+		</table>			
+	</article>
+
+
+	<br /> <br />
+</div>
+
+</hr/>
+
+<div class="modal fade" id="intermediateModal" tabindex="-1" role="dialog" aria-labelledby="intermediateModal" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title modalheader" id="myModalLabel">
+			<i class="fa fa-spinner fa-spin"></i>        	
+        Processing request to start Jmeter Test Execution with monitoring</h4>
+      </div>
+      <div class="modal-body modalbody">
+      	<div class="container">
+        	<i class="fa fa-spinner fa-spin fa-3x"></i>
+        	<br/>
+        	<small>It may take upto a 60s for the activation to complete...</small>
+        </div>
+      </div>
+      	
+      <div class="modal-footer">
+      
+      </div>
+    </div>
+  </div>
+</div>
+
+	<br/>
+	<br/>
+	<div class="container jmeter-config-pane" ng-show="testExecution.testId">		
+		<div class="page-header">
+			<h1>Test Results</h1><small></small>
+		</div>
+		<div class="row">
+			<div class="col-lg-1">
+				<a ng-click="toggle = !toggle">
+					<i class="fa" ng-class="{'fa-minus-square' : toggle , 'fa-plus-square' : !toggle}"></i>
+				</a>				
+			</div>
+			<div class="col-lg-10" ng-show="toggle">
+				<div class="panel panel-primary" id="results" >
+				<div class="panel-heading">
+					Realtime Summary results for the Test Execution 	
+				</div>
+				<div class="panel-body">
+					<table class="table table-bordered table-striped" style="width:  100%;">
+						<thead>
+							<tr><th>#</th><th>Load Generator</th><th>Stage Machine </th><th>Configuration</th><th>Action(Stop)</th>
+							<th>Detailed Test Result</th></tr>
+						</thead>
+						<tbody>
+							<tr><td>{{testExecution.testId}}</td><td>{{testExecution.loadgenerator}}</td><td>{{testExecution.sut}}
+							<td class="small">
+								<table>
+									<tbody>
+										<tr><th><span class="label label-success">vusers</span></th><th>{{testExecution.config.vusers}}</th><tr>
+										<tr><th><span class="label label-success">duration</span></th><th>{{testExecution.config.duration}}</th></tr>
+										<tr><th><span class="label label-success">parameters</span></th><th>{{testExecution.config.params}}</th></tr>
+										<tr><th><span class="label label-success">script</span></th><th>{{testExecution.config.scriptName.split('/').pop()}}</th></tr>
+									</tbody>
+								</table>																		
+							</td>
+							<td>
+								<a ng-click="stopTest(testExecution.testId)" class="btn btn-default btn-danger>
+									<i class="fa fa-times"> &nbsp; Stop!</i></a>
+							</td>
+							<td>
+								<div><a href=""></a>Link to dynamic reporting</div>	
+							</td>
+							</tr>
+						
+						</tbody>	
+					</table>
+					<br/>
+
+				</div>
+				<div class="panel-footer">
+				<div class="row jarviswidget" id="wid-id-0">
+					<div class="col-xs-6 col-md-3" id="graph_1" style="height: 180px; width: 25%;">
+    					<ng-flotChart></ng-flotChart>
+  					</div>
+  					<div class="col-xs-6 col-md-3" id="graph_2" style="height: 180px; width: 25%;">
+    					<ng-flotChart></ng-flotChart>
+  					</div>
+  					<div class="col-xs-6 col-md-3" id="graph_3" style="height: 180px; width: 25%;">
+    					<ng-flotChart></ng-flotChart>
+  					</div>
+  					<div class="col-xs-6 col-md-3" id="graph_4" style="height: 180px; width: 25%;">
+    					<ng-flotChart></ng-flotChart>
+  					</div>
+				</div>
+			
+			</div>	
+			</div>
+			
+</div>
+	
+
+

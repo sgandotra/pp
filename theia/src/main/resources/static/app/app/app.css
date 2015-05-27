@@ -1,0 +1,202 @@
+/* app css stylesheet */
+
+.menu {
+  list-style: none;
+  border-bottom: 0.1em solid black;
+  margin-bottom: 2em;
+  padding: 0 0 0.5em;
+}
+
+.menu:before {
+  content: "[";
+}
+
+.menu:after {
+  content: "]";
+}
+
+.menu > li {
+  display: inline;
+}
+
+.menu > li:before {
+  content: "|";
+  padding-right: 0.3em;
+}
+
+.menu > li:nth-child(1):before {
+  content: "";
+  padding: 0;
+}
+
+.greeting {
+	color : white
+}
+
+.alertmsg {
+	horizontal-align : center;
+}
+
+.hostactive {
+	height : 500px;
+}
+
+.hostInactive {
+	height : 600px;
+}
+
+.md-warn1 {
+	background-color: rgb(255,138,128) !important;
+	color: rgb(0,0,0);
+
+}
+
+.go-green {
+	color : green !important;
+}
+
+.go-red {
+	color : red !important;
+}
+
+.go-warn {
+	color : chocolate !important;
+}
+
+nav a {
+  padding: 20px;
+  color: #333;
+  text-decoration: none;
+
+}
+a:hover {
+  background: #fff;
+}
+a.active {
+  background: #00AC7F;
+  color: #fff;
+}
+
+.sidebar {
+	font-size : 16px;
+}
+
+.readout {
+	background-color : azure;
+} 
+
+.confighost {
+	background-color : aliceblue;
+} 
+
+.wave.ng-leave {
+  position: absolute;
+  left:0;
+}
+
+.wave.ng-leave.ng-leave-active {
+  left:100%;
+}
+
+.wave.ng-enter, .wave.ng-leave {
+  -webkit-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+  transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+}
+T
+.wave.ng-enter {
+  position: absolute;
+  left:-100%;
+}
+
+.wave.ng-enter.ng-enter-active {
+  left:0;
+}
+
+
+
+.datepicker.dropdown-menu {
+  width: 250px;
+  height: 270px;
+  button {
+    outline: none;
+    border: 0px;
+  }
+  tbody {
+    height: 180px;
+  }
+  tbody button {
+    padding: 6px;
+  }
+  &.datepicker-mode-1, &.datepicker-mode-2 {
+    tbody button {
+      height: 65px;
+    }
+  }
+}
+
+a.tooltips {
+  position: relative;
+  display: inline;
+}
+a.tooltips span {
+  position: absolute;
+  width:180px;
+  color: #FFFFFF;
+  background: #000000;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  visibility: hidden;
+  border-radius: 6px;
+  font-size : xx-small;
+}
+a.tooltips span:after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -8px;
+  width: 0; height: 0;
+  border-top: 8px solid #000000;
+  border-right: 8px solid transparent;
+  border-left: 8px solid transparent;
+}
+a:hover.tooltips span {
+  visibility: visible;
+  opacity: 0.8;
+  bottom: 30px;
+  left: 50%;
+  margin-left: -76px;
+  z-index: 999;
+}
+
+.jmeter-config-pane {
+	background-color : ghostwhite;
+	padding-top : 15px;
+	padding-left : 30px;
+	padding-right : 30px;
+	padding-bottom  : 15px;
+	border-radius: 10px;
+}
+
+.jmeterparams {
+	font-family: monospace;
+  	font-size: 10px;
+  	font-weight: bold;
+  	color: red;
+}
+
+.jmetermetadataheader {
+	background-color : #404040 !important;
+	border-color : #383838 !important;
+	background-image : -webkit-linear-gradient(top,rgba(3, 3, 3, 0) 0,rgba(250, 250, 250, 0) 100%) !important;
+	color : #fff;
+	font-size : 13px !important;
+}
+
+.jmetermetadata {
+	font-size : 12px !important;
+}
+
+
+

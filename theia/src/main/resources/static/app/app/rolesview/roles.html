@@ -1,0 +1,218 @@
+<ol class="breadcrumb">
+	<li><a href="#">Home</a></li>
+	<li class="active">Roles</li>
+</ol>
+<br/>
+	<div class="alert"
+		ng-hide="hidden" 
+		ng-class="{'alert-success':success, 'alert-info':info, 'alert-warning':warning,
+		'alert-danger':danger}" role="alert">
+		 {{message}}
+	</div>
+
+<div layout="column" style="padding-bottom: 15px;" >
+	<md-toolbar class="md-accent" md-scroll-shrink>
+		<div class="md-toolbar-tools">
+			<div layout="column">
+				<div layout="row" layout-align="center center">
+						<a class="fa fa-users"></a> &nbsp; Manage Roles 
+						<span class="label"><b><small>Total Roles : {{response.length || 'N/A'}}</small></b></span>
+				</div>
+				
+			</div>
+		</div>
+	</md-toolbar>
+	<md-content class="md-padding">	
+		<div class="container-fluid">
+					<div class="row">
+						<div class="col-lg-2">
+							
+						</div>
+						<div class="col-lg-5">
+							<label for="searchRole">Find </label> 
+							<input type="text" class="form-control" id="searchRole" placeholder="Search by Component Name"
+							 ng-model="query" />
+						</div>
+						<div class="col-lg-1">
+							
+						</div>
+						<div class="col-lg-4">
+							<p> <b>Add a new Role </b></p>
+							<button type="button" class="btn btn-default btn-sm"
+								title="Add a new role"
+								data-toggle="modal" data-target="#roleModel">
+								<a class="fa fa-plus"></a>
+							</button>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-lg-1">
+						</div>
+						<div class="col-lg-9">
+						<table class="table table-striped">
+							<thead>
+								<tr>
+									<td><b>Id</b></td>
+									<td><b>Role Name</b></td>
+									<td><b>Components</b></td>
+									<td><b>Actions</b></td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="_role in response">
+									<td> {{_role.id}} </td>
+									<td> {{_role.name | titleCase }}</td>
+									<td>
+										<span ng-repeat="_component in _role.components | filter:query">
+											<span  class="label"><a href="#!/componentsview/{{_component.id}}">{{_component.name}}</a>
+												<a href="#!/roles" ng-click="deleteSingleComponent(_role.id,
+														_component.name)"><i class="fa fa-times" style="color : white"></i></a>
+											</span> &nbsp;
+										</span> 
+									</td>
+									<td  style="white-space:nowrap">
+										<span>
+										<button type="button" class="btn btn-default btn-sm"
+		  										data-toggle="modal" data-target="#updateRoleModel" title="Edit Role"
+		  										ng-click="setupEditRole(_role)">
+		  											<a class="fa fa-edit"></a>
+		  									</button>
+										&nbsp;&nbsp;&nbsp;
+											<button type="button" class="btn btn-default btn-sm"
+		  										data-toggle="tooltip" title="Delete Role"
+		  										ng-click="deleteRole(_role.id)">
+		  											<a class="fa fa-trash" style="color : red"></a>
+		  									</button>
+		  								</span>	
+									</td>
+								</tr>
+							</tbody>
+						
+						</table>
+						</div>
+						<div class="col-lg-1">
+						</div>
+					</div>
+				</div>
+					</md-content>
+			</div>
+
+<md-toolbar class="md-accent" md-scroll-shrink>
+		<div class="md-toolbar-tools">
+			<div layout="column">
+				<div layout="row" layout-align="center center">
+					
+				</div>
+				
+			</div>
+		</div>
+</md-toolbar>
+
+
+<div class="modal fade" id="roleModel">
+	 <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Add a new Role with Components</h4>
+      </div>
+      <div class="modal-body">
+      	<form name="form" class="css-form" novalidate>
+      	   	<div class="container-fluid">
+      	   		<div class="row">
+      	   			<div class=".col-lg-12">
+      	   				<label for="name">Add a new Role</label>
+      	   				<div class="input-group col-lg-12" >
+			       				<input type="text" class="form-control" id="name" placeholder="Add a role name" 
+			       					   ng-model="selectedrole.name" name="name" 
+			       					   rolename required/>
+			       			<span class="input-group-addon" ng-show="form.name.$pending.rolename"><a class="fa fa-spinner spin" 
+			       		  		alt="Checking if rolename is available"></a>
+			       			</span>
+			       			<span class="input-group-addon" ng-show="form.name.$error.rolename">
+			       				<a class="fa fa-times " alt='Duplicate!' , style="color : red"/>
+			       			</span>
+		       			</div>
+		       		</div>
+		       	</div>
+		       	<div class="row">
+		       		  <br/>
+		       		  <label for="dropdown">Select from existing components : </label>
+  					<ui-select multiple ng-model="selectedrole.mycomponents" 
+  							   theme="bootstrap" 
+  							   ng-disabled="disabled" 
+  							   close-on-select="false" 
+  							   title="Choose a component"
+  							   id="components">
+    					<ui-select-match placeholder="Select components...">
+    						{{$item.name}}
+    					</ui-select-match>
+    					<ui-select-choices repeat="component in components | propsFilter : { name : $select.search } track by component.name">
+      						{{component.name}}
+    					</ui-select-choices>
+  					</ui-select>
+  					
+  					<hr>
+		       	</div>
+		       
+		    </div>
+		</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" ng-click="addRole()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="updateRoleModel">
+	 <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h3 class="modal-title" id="myModalLabel">Edit a Role</h3>
+      </div>
+      <div class="modal-body">
+      	<form name="form" class="css-form" novalidate>
+      	   	<div class="container-fluid">
+      	   		<div class="row">
+      	   			<div class=".col-lg-12">
+      	   				<label for="name">Add a new Role</label>
+      	   				<div class="input-group col-lg-12" >
+			       				<input type="text" class="form-control" id="name" placeholder="Add a role name" 
+			       					   ng-model="selectedrole.name" name="name" disabled 
+			       					   required/>
+		       			</div>
+		       		</div>
+		       	</div>
+		       	<div class="row">
+		       		  <br/>
+		       		  <label for="dropdown">Select from existing components : </label>
+  					<ui-select multiple ng-model="selectedrole.mycomponents" 
+  							   theme="bootstrap" 
+  							   ng-disabled="disabled" 
+  							   close-on-select="false" 
+  							   title="Choose a component"
+  							   id="components">
+    					<ui-select-match placeholder="Select components...">
+    						{{$item.name}}
+    					</ui-select-match>
+    					<ui-select-choices repeat="component in components | filter:$select.name">
+      						{{component.name}}
+    					</ui-select-choices>
+  					</ui-select>
+  					
+  					<hr>
+		       	</div>
+		       
+		    </div>
+		</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" ng-click="editRole()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>

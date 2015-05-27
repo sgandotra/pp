@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <link rel="icon" href="../../favicon.ico" />
+
+    <title>Welcome to the PTAAS Portal</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="app/app/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Custom styles for this template -->
+    <link href="app/app/cover.css" rel="stylesheet" />
+    
+    <link href="app/app/app.css" rel="stylesheet" />
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="container">
+
+
+          <div class="masthead clearfix">
+            <div class="inner">
+            <br/>
+              <h3 class="masthead-brand">PTAAS- </h3> <h4> your one stop shop for all Performance Testing needs!</h4>
+              <nav>
+                <ul class="nav masthead-nav navbar-fixed-top">
+                  <li class="active"><a href="#">Home</a></li>
+                  <li><a href="#">Help</a></li>
+                  <li><a href="#">Contact</a></li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+		  <br/>
+		  <br/>
+		  <br/>
+		  <br/>
+		  <br/>
+		  <br/>
+		  <br/>
+		  <br/>
+		  <br/>
+		  <br/>
+		  <br/>
+		  <br/>
+        	<div class="row">
+        			<div class="col-lg-1">
+        			</div>
+		            <div class="col-lg-10">
+		                <div th:if="${param.error}">
+			            	Invalid username and password.
+			        	</div>
+			        	<div th:if="${param.logout}">
+			            	You have been logged out.
+			        	</div>
+			        	<form th:action="@{/login}" method="post" class="form-signin" style="width:40%">
+			        		<h4 class="form-signin-heading">Please Sign in using your CORP credentials</h4>
+			            	 <label for="inputEmail" class="sr-only">Email address</label>
+		        			 <input type="text" id="username" name="username" class="form-control" placeholder="Email address" 
+		        			 	required="true" autofocus="true" />
+		        			 <br/>
+		        			 <label for="inputPassword" class="sr-only">Password</label>
+		        			 <input type="password" id="password" name="password" class="form-control" placeholder="Password" required="true" />
+<!-- 		        			 <div class="checkbox"> -->
+<!-- 		          				<label> -->
+<!-- 		            				<input type="checkbox" value="remember-me"/> Remember me -->
+<!-- 		          				</label> -->
+<!-- 		        			</div> -->
+							  <br/>
+		        			<button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+		      			</form>	
+	      		</div>  
+	      		<div class="col-lg-1">
+        			</div>          		           
+			</div>
+			<br/>
+			<br/>
+			<br/>
+			<br/>
+			<br/>
+			<br/>
+			<br/>
+			<hr/>
+			<div class="row">
+        <div class="col-lg-4">
+          <h2>System Resource Monitoring</h2>
+          <p>Seamlesly enable system resource level monitoring using this portal. Wide range of resource metrics are captured 
+          including <b>CPU </b>, <b>Memory </b> , <b> Network </b> and  <b> IO </b>. All the data is captured and stored in Graphite. </p>
+          <p><a class="btn btn-primary" href="#" role="button">View details &raquo;</a></p>
+        </div>
+        <div class="col-lg-4">
+          <h2>JVM Memory Monitoring</h2>
+          <p>Detailed memory usage and monitoring of the Heap and Non-Heap. Identity memory leaks easily for <b>Sparta </b>, <b> Helix </b>
+           or <b> Raptor </b>
+          based applications</p>
+          <p><a class="btn btn-primary" href="#" role="button">View details &raquo;</a></p>
+       </div>
+        <div class="col-lg-4">
+          <h2>NodeJS Resource Monitoring</h2>
+          <p>NodeJS monitoring is easy too!. Just run hostmon on the host and register the name of the application to be monitored</p>
+          <p><a class="btn btn-primary" href="#" role="button">View details &raquo;</a></p>
+        </div>
+      </div>
+		<div>
+			<div class="col-lg-12">
+				<h4> Additionally all the data above along with Jmeter Client data can be correlated in Graphite to identity and spot
+				hard to find performance issues</h4>
+			</div>
+		</div>	
+          <footer class="footer">
+            <div class="inner">
+              <p>© 1999 - 2014 PayPal Inc <a href="https://www.paypal.com"></a></p>
+            </div>
+          </footer>
+
+
+
+
+
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="app/app/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+  </body>
+</html>

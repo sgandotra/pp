@@ -1,0 +1,142 @@
+<ol class="breadcrumb">
+	<li><a href="#">Home</a></li>
+	<li class="active">Components</li>
+</ol>
+<br/>
+<md-toolbar md-scroll-shrink ng-hide="hidden" style="background-color:white" class="md-short">
+	<div class="md-toolbar-tools">
+		<div class="alert"
+			ng-class="{'alert-success':success, 'alert-info':info, 'alert-warning':warning,
+			'alert-danger':danger}" role="alert">
+			 {{message}}
+		</div>
+	</div>
+</md-toolbar>
+<br/>
+<div layout="column" style="padding-bottom: 15px;" >
+	<md-toolbar class="md-accent" md-scroll-shrink>
+		<div class="md-toolbar-tools">
+			<div layout="column">
+				<div layout="row" layout-align="center center">
+					<a class="fa fa-cog"></a> &nbsp;&nbsp;&nbsp;Manage Components &nbsp;&nbsp;
+					<span class="label"><small>({{response.length || 'N/A'}})</small></span>
+				</div>
+				
+			</div>
+		</div>
+	</md-toolbar>
+	<md-content class="md-padding">	
+		<div class="container-fluid">
+			<div class="row"></div>
+			<div class="row"></div>
+			<div class="row">
+				<div class="col-lg-2">
+				</div>
+				<div class="col-lg-4">
+					<label for="searchComponent">Find </label> 
+					<input type="text" class="form-control" id="searchComponent" placeholder="Search by component name"
+					 ng-model="query" />
+				</div>
+				<div class="col-lg-2">
+					
+				</div>
+				<div class="col-lg-4">
+					<p> <b>Add a new Component </b></p>
+					<button type="button" class="btn btn-default btn-sm"
+						title="Add a new component"
+						data-toggle="modal" data-target="#componentModel">
+						<a class="fa fa-plus"></a>
+					</button>
+				</div>
+			</div>
+			<div class="row">
+				<br/>
+			</div>
+			<div class="row">
+				<div class="col-lg-2">
+				</div>	
+				<div class="col-lg-8">			
+						<table class="table table-striped">
+  						<thead>
+  							<tr>
+  								<td> <b> Id </b></td>
+  								<td> <b> Name </b></td>
+  								<td> <b>Action </b> </td>
+  							</tr>
+  						</thead>
+  						<tbody>
+  							<tr ng-repeat="component in response | filter:query">
+  								<td id="{{component.id}}"> {{component.id}} </td>
+  								<td>
+  									<span editable-text="component.name" e-name="name" e-form="rowform" e-required="true"> 
+  								 		{{component.name | titleCase }}
+  								 	</span> 
+  								 </td>
+  								<td> 
+  									<button type="button" class="btn btn-default btn-sm"
+  										data-toggle="tooltip" title="Delete Component"
+  										ng-click="deleteComponent(component.id,component.name)">
+  											<a class="fa fa-trash" style="color : red"></a>
+  									</button>
+  									&nbsp;&nbsp;&nbsp;
+  									 <span>
+  									  <form editable-form name="rowform"
+										ng-show="rowform.$visible" class="form-buttons form-inline"
+										onbeforesave="updateComponent(component.id,component.name
+											,$data.name)">
+										<button type="submit" ng-disabled="rowform.$waiting"
+											class="btn btn-default btn-sm" >
+											<a class="fa fa-save"></a>
+										</button>
+									</form>
+									</span>
+									 <span class="buttons" ng-show="!rowform.$visible">
+							         	<button class="btn btn-default btn-sm" ng-click="rowform.$show()">
+							         		<a class="fa fa-edit"></a>
+							         	</button>
+							         </span>  
+								</td>
+  							</tr>
+  						
+  						</tbody>
+					</table>
+				</div>
+				<div class="col-lg-2">
+				</div>	
+				</div>
+				</div>
+		</md-content>
+	</div>
+<md-toolbar class="md-accent" md-scroll-shrink>
+		<div class="md-toolbar-tools">
+			<div layout="column">
+				<div layout="row" layout-align="center center">
+					
+				</div>
+				
+			</div>
+		</div>
+</md-toolbar>
+	
+
+
+<div class="modal fade" id="componentModel">
+	 <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Add a new Component</h4>
+      </div>
+      <div class="modal-body">
+        <label for="addComponent">Add a new component</label>
+        <input type="text" class="form-control" id="addComponent" placeholder="Add a component name" ng-model="name" required/>
+        
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" ng-click="addComponent()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,601 @@
+<md-toolbar md-scroll-shrink ng-hide="hidden" style="background-color:white" class="md-short">
+	<div class="md-toolbar-tools">
+		<div class="alert"
+			ng-class="{'alert-success':success, 'alert-info':info, 'alert-warning':warning,
+			'alert-danger':danger}" role="alert">
+			 {{message}}
+		</div>
+	</div>
+</md-toolbar>
+
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-lg-2"></div>
+		<div class="col-lg-8">
+			<h2>Favorites</h2>
+			<hr />
+			<div ng-repeat="configuration in configurations">
+				<div ng-if="configuration.favorite && !configuration.running">
+
+				</div>
+			</div>
+			<br />
+		</div>
+		<div class="col-lg-2"></div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-2"></div>
+		<div class="col-lg-8">
+			<h2>Running</h2>
+			<div ng-repeat="configuration in configurations">
+				<div ng-if="configuration.running">
+					<div class="panel" ng-class="{'panel-danger' : configuration.blink, 'panel-warning' : !configuration.blink}">
+						<div class="panel-heading">
+							<div class="container-fluid">
+								<div class="col-lg-1">
+									<a class="fa"
+										ng-class="{'fa-plus-square' : collapsed, 'fa-minus-square-o' : !collapsed }"
+										ng-init="collapsed = true" ng-click="collapsed = !collapsed"
+									data-toggle="collapse"></a>
+								</div>
+								<div class="col-lg-3">
+									<h2>{{configuration.name | titleCase}}</h2>
+								</div>
+								<div class="col-lg-2"></div>
+								<div class="col-lg-3">
+									<span> </span>
+								</div>
+								<div class="col-lg-1">
+									<span>
+										<button type="button" class="btn btn-danger"
+											ng-click="disableMonitoring(configuration)">Stop
+											Monitoring</button>
+									</span>
+								</div>
+							</div>
+						</div>
+						<div class="panel-body collapse" collapse="collapsed">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th>HOST</th>
+										<th>Roles</th>
+										<th>All Components</th>
+										<th>NMON </th>
+								</thead>
+								<tbody>
+									<tr ng-repeat="host in configuration.hosts">
+										<td><strong>{{host.hostName | titleCase}}</strong></td>
+										<td><span ng-repeat="role in host.roles"> <span
+												class="label label-primary">{{role.name}}</span>&nbsp;&nbsp;
+										</span></td>
+										<td><span ng-repeat="role in host.roles"> <span
+												ng-repeat="component in role.components"> <span
+													class="label label-default">{{component.name}}</span>&nbsp;&nbsp;
+											</span>
+										</span></td>
+										<td><small>{{getNmonPercent(host,configuration)}}%</small> <span>
+												<md-progress-circular class="md-hue-2" md-mode="determinate"
+													value={{getNmonPercent(host,configuration)}}>{{getNmonPercent(host)}}%</md-progress-circular>
+										</span></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+
+					</div>
+				</div>
+
+			</div>
+			<br />
+			<hr />
+		</div>
+		<div class="col-lg-2"></div>
+	</div>
+	<div class="row">
+		<div class="col-lg-2"></div>
+		<div class="col-lg-8">
+			<h2>Available</h2>
+
+			<br />
+
+			<div>
+
+				<div ng-repeat="configuration in configurations">
+					<div ng-if="!configuration.running && !configuration.favorite">
+						<div class="panel panel-success">
+							<div class="panel-heading">
+								<div class="container-fluid">
+									<div class="col-lg-1">
+										<a class="fa"
+											ng-class="{'fa-plus-square' : collapsed, 'fa-minus-square-o' : !collapsed }"
+											ng-init="collapsed = true" ng-click="collapsed = !collapsed"
+											data-toggle="collapse"></a>
+									</div>
+									<div class="col-lg-3">
+										<h2>{{configuration.name | titleCase}}</h2>
+									</div>
+									<div class="col-lg-2"></div>
+									<div class="col-lg-3">
+										<span> <md-checkbox ng-model="configuration.nmon"
+												type="checkbox" aria-label="Checkbox 1"
+												ng-change="toggleNmon(configuration)"> <small>Enable
+												All</small> </md-checkbox>
+										</span>
+									</div>
+									<div class="col-lg-1">
+										<span>
+											<button type="button" class="btn btn-success"
+												ng-click="enableMonitoring(configuration)">Start
+												Monitoring</button>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="panel-body collapse" collapse="collapsed">
+								<table class="table table-striped">
+									<thead>
+										<tr>
+											<th>HOST</th>
+											<th>Roles</th>
+											<th>All Components</th>
+											<th>System Resource Monitoring</th>
+									</thead>
+									<tbody>
+										<tr ng-repeat="host in configuration.hosts">
+											<td><strong>{{host.hostName | titleCase}}</strong></td>
+											<td><span ng-repeat="role in host.roles"> <span
+													class="label label-primary">{{role.name}}</span>&nbsp;&nbsp;
+											</span></td>
+											<td><span ng-repeat="role in host.roles"> <span
+													ng-repeat="component in role.components"> <span
+														class="label label-default">{{component.name}}</span>&nbsp;&nbsp;
+												</span>
+											</span></td>
+											<td>
+												<div class="well well-sm">
+													<md-checkbox ng-model=host.nmon
+														ng-change="setDefaultDate(host,$index)"
+														aria-label="Checkbox 1" type="checkbox" />
+													<small>Enable?</small>
+													</md-checkbox>
+													<form id="datepickerForm_{{$index}}"
+														name="datepickerForm_{{$index}}" class="form-inline"
+														role="form">
+														<div class="form-group"
+															ng-class="{'has-error': datepickerForm_{{$index}}.date.$invalid}">
+															<label class="control-label"><i
+																class="fa fa-calendar"></i> <small>(end date)</small></label> <input
+																type="text" class="form-control"
+																ng-model="host.duration" name="date" bs-datepicker>
+														</div>
+													</form>
+												</div>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+			<hr />
+		</div>
+		<div class="col-lg-2"></div>
+	</div>
+</div>
+
+<div class="modal bs-example-modal-lg" id="startMonitoring">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header navbar-inverse">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h2 class="modal-title" id="myModalLabel" style="color: white">
+					<a class="fa fa-2x"
+						ng-class="{'fa-spinner fa-2x fa-spin' : configuration.spinner.isSpinning, 
+								   'fa-check fa-2x go-green' : configuration.spinner.isSuccess, 
+								   'fa-close go-red fa-2x' : configuration.spinner.isFailure }"
+						style="color: white"></a> &nbsp; Start Monitoring
+					'{{configuration.name | titleCase }}'
+				</h2>
+			</div>
+			<div class="modal-body">
+				<div class="container-fluid">
+					<br />
+					<div class="row">
+
+					</div>
+					<div class="row">
+						<div class="col-lg-12">
+							<div class="progress">
+								<div class="progress-bar" role="progressbar progress-bar-success" aria-valuenow="60"
+									aria-valuemin="0" aria-valuemax="100" id="progressbar"
+									style="width:{{configuration.highlightstepone ? 33 : 0}}%;">
+									<span><strong>Validate</strong></span>
+								</div>
+								<div class="progress-bar" role="progressbar progress-bar-success" aria-valuenow="60"
+									aria-valuemin="0" aria-valuemax="100" id="progressbar"
+									style="width:{{configuration.highlightsteptwo ? 33 : 0}}%;">
+									<span><strong>Categorize</strong></span>
+								</div>
+								<div class="progress-bar" role="progressbar progress-bar-success" aria-valuenow="60"
+									aria-valuemin="0" aria-valuemax="100" id="progressbar"
+									style="width:{{configuration.highlightstepthree ? 34 : 0}}%;">
+									<span><strong>Activating...</strong></span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div ng-switch="getCurrentStep()" class="slide-frame">
+					<br /> <br />
+					<div ng-switch-when="one" class="wave">
+						<div class="container-fluid">
+							<div class="row">
+								<table class="table table-striped">
+									<thead>
+										<tr>
+											<th>Active HOST(s)</th>
+											<th></th>
+											<th>All Components</th>
+											<th>NMON</th>
+									</thead>
+									<tbody>
+										<tr ng-repeat="host in configuration.hosts"
+											ng-if="host.active === true">
+											<td><strong>{{host.hostName | titleCase}}</strong></td>
+											<td></td>
+											<td><span ng-repeat="role in host.roles"> <span
+													ng-repeat="component in role.components"> <span
+														class="label label-default">{{component.name}}</span>&nbsp;&nbsp;
+												</span>
+											</span></td>
+											<td><a class="fa fa-2x"
+												ng-class="{'fa-check' : host.nmon,'fa-close' : !host.nmon }">
+											</a></td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="row">
+								<br /> <br /> <br />
+							</div>
+							<div class="row">
+								<table class="table table-striped">
+									<thead>
+										<tr>
+											<th>InActive HOST(s)</th>
+											<th></th>
+											<th>All Components</th>
+											<th>System Resource Monitoring</th>
+									</thead>
+									<tbody>
+										<tr ng-repeat="host in configuration.hosts"
+											ng-if="host.active !== true">
+											<td><strong>{{host.hostName | titleCase}}</strong></td>
+											<td></td>
+											<td><span ng-repeat="role in host.roles"> <span
+													ng-repeat="component in role.components"> <span
+														class="label label-default">{{component.name}}</span>&nbsp;&nbsp;
+												</span>
+											</span></td>
+											<td></td>
+										</tr>
+									</tbody>
+								</table>
+
+
+							</div>
+						</div>
+					</div>
+					<div ng-switch-when="two" class="wave">
+						<div class="container-fluid">
+							<div class="row">
+								<table class="table">
+									<thead>
+										<tr>
+											<th>Agent (nmon)</th>
+											<th>Active Components</th>
+											<th>Inactive Components</th>
+									<thead>
+									<tbody>
+										<tr ng-repeat="host in configuration.hosts"
+											ng-if="host.active === true">
+											<td><span> {{host.hostName}}</span></td>
+											<td><span ng-repeat="service in host.monitoredServices">
+													<span class="label label-success">{{service.name}}</span>
+											</span></td>
+											<td><span
+												ng-repeat="inactiveservice in host.inActiveComponents ">
+													<span class="label label-danger">{{inactiveservice}}</span>
+											</span></td>
+										</tr>
+
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<div ng-switch-when="three" class="wave">
+						<div class="container-fluid">
+							<div class="row">
+								<table class="table table-striped">
+									<thead>
+										<tr>
+											<th>Active HOST(s)</th>
+											<th>NMON</th>
+											<th>JAVA</th>
+											<th>NODEMON</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr ng-repeat="host in configuration.activationresponse.host">
+											<td><strong>{{host.hostName | titleCase}}</strong></td>
+											<td>
+												<span ng-if="configuration.completion === '100'">
+													<a class="fa tooltips"
+														ng-class="{'fa-exclamation go-warn' : !host.nmonResponseActivate.status , 
+															'fa-check go-green' : host.nmonResponseActivate.status}">
+															<span>{{host.nmonResponseActivate.nmonStatus.tooltip}}</span>
+													</a> 
+													{{host.nmonResponseActivate.status}}
+												</span>
+												<span ng-if="configuration.completion !== '100'">
+													<a class="fa fa-spin fa-circle-o-notch"></a> 
+												</span>
+											</td>
+											<td>
+												<span ng-if="configuration.completion !== '100'">
+													<a class="fa fa-spin fa-circle-o-notch"></a> 
+												</span>
+												<span ng-repeat="valid in host.jmonResponseActivate.services.valid">
+															<a class="fa tooltips"
+															ng-class="{'fa-exclamation go-warn' : !valid.status , 'fa-check go-green' : valid.status}">
+																<span>{{host.jmonResponseActivate.tooltip}}</span>
+															</a> {{valid.name}}
+
+												</span> 
+												<span ng-repeat="invalid in host.jmonResponseActivate.services.invalid">
+													<a class="fa fa-check go-green"></a> {{invalid.name}}
+												</span>
+											</td>
+											<td>
+												<span ng-if="configuration.completion !== '100'">
+														<a class="fa fa-spin fa-circle-o-notch"></a> 
+												</span>
+												<span ng-repeat="valid in host.nodeMonResponseActivate.services.valid">
+														<a class="fa tooltips"
+														ng-class="{'fa-exclamation go-warn' : !valid.status , 'fa-check go-green' : valid.status}">
+															<span>{{valid.tooltip}}</span>
+														</a> {{valid.name}}
+												</span> 
+											<span
+												ng-repeat="invalid in host.nodeMonResponseActivate.services.invalid">
+													<a class="fa fa-check go-green"></a> {{invalid.name}}
+											</span></td>
+										</tr>
+									</tbody>
+								</table>
+
+							</div>
+							<div>
+								<button class="btn" ng-show="!configuration.spinner.isSpinning"
+									ng-class="{'btn-success' : configuration.spinner.isSuccess, 
+											   'btn-danger' : configuration.spinner.isFailure } "
+									ng-click="onClose()">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="modal bs-example-modal-lg" id="stopMonitoring">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header navbar-inverse">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h2 class="modal-title" id="myModalLabel" style="color: white">
+					<a class="fa fa-2x"
+						ng-class="{'fa-spinner fa-spin' : configuration.spinner.isSpinning, 
+								   'fa-check fa-2x go-green' : configuration.spinner.isSuccess, 
+								   'fa-close go-red fa-2x' : configuration.spinner.isFailure }"
+						style="color: white"></a> &nbsp; Stop Monitoring
+					'{{configuration.name | titleCase }}'
+				</h2>
+			</div>
+			<div class="modal-body">
+				<div class="container-fluid">
+					<br />
+					<div class="row">
+						
+					</div>
+					<div class="row">
+						<div class="col-lg-12">
+							<div class="col-lg-12">
+								<div class="progress">
+									<div class="progress-bar" role="progressbar progress-bar-success" aria-valuenow="60"
+										aria-valuemin="0" aria-valuemax="100" id="progressbar"
+										style="width:{{configuration.highlightstepone ? 33 : 0}}%;">
+										<span><strong>Validate</strong></span>
+									</div>
+									<div class="progress-bar" role="progressbar progress-bar-success" aria-valuenow="60"
+										aria-valuemin="0" aria-valuemax="100" id="progressbar"
+										style="width:{{configuration.highlightsteptwo ? 33 : 0}}%;">
+										<span><strong>Categorize</strong></span>
+									</div>
+									<div class="progress-bar" role="progressbar progress-bar-success" aria-valuenow="60"
+										aria-valuemin="0" aria-valuemax="100" id="progressbar"
+										style="width:{{configuration.highlightstepthree ? 34 : 0}}%;">
+										<span><strong>Deactivating...</strong></span>
+									</div>
+								</div>
+						</div>
+						</div>
+					</div>
+					<div ng-switch="getCurrentStep()" class="slide-frame">
+						<br /> <br />
+						<div ng-switch-when="one" class="wave">
+							<div class="container-fluid">
+								<div class="row">
+									<table class="table table-striped">
+										<thead>
+											<tr>
+												<th>Active HOST(s)</th>
+												<th></th>
+												<th>All Components</th>
+												<th>NMON</th>
+										</thead>
+										<tbody>
+											<tr ng-repeat="host in configuration.hosts"
+												ng-if="host.active === true">
+												<td><strong>{{host.hostName | titleCase}}</strong></td>
+												<td></td>
+												<td><span ng-repeat="role in host.roles"> <span
+														ng-repeat="component in role.components"> <span
+															class="label label-default">{{component.name}}</span>&nbsp;&nbsp;
+													</span>
+												</span></td>
+												<td><a class="fa fa-2x"
+													ng-class="{'fa-check' : host.nmon,'fa-close' : !host.nmon }">
+												</a></td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<div class="row">
+									<br /> <br /> <br />
+								</div>
+								<div class="row">
+									<table class="table table-striped">
+										<thead>
+											<tr>
+												<th>InActive HOST(s)</th>
+												<th></th>
+												<th>All Components</th>
+												<th>System Resource Monitoring</th>
+										</thead>
+										<tbody>
+											<tr ng-repeat="host in configuration.hosts"
+												ng-if="host.active !== true">
+												<td><strong>{{host.hostName | titleCase}}</strong></td>
+												<td></td>
+												<td><span ng-repeat="role in host.roles"> <span
+														ng-repeat="component in role.components"> <span
+															class="label label-default">{{component.name}}</span>&nbsp;&nbsp;
+													</span>
+												</span></td>
+												<td></td>
+											</tr>
+										</tbody>
+									</table>
+
+
+								</div>
+							</div>
+						</div>
+						<div ng-switch-when="two" class="wave">
+
+							<div class="container-fluid">
+								<div class="row">
+									<table class="table">
+										<thead>
+											<tr>
+												<th>Agent (nmon)</th>
+												<th>Active Components</th>
+												<th>Inactive Components</th>
+										<thead>
+										<tbody>
+											<tr ng-repeat="host in configuration.hosts">
+
+												<td><span> {{host.hostName}} <a class="fa"
+														ng-class="{'fa-check' : host.nmon,
+		      										 'fa-close' : !host.nmon }"></a>
+												</span></td>
+												<td><span
+													ng-repeat="service in host.monitoredServices "> <span
+														class="label label-success">{{service.name}}</span>
+												</span></td>
+												<td><span
+													ng-repeat="inactiveservice in host.inactiveComponents">
+														<span class="label label-danger">{{inactiveservice}}</span>
+												</span></td>
+											</tr>
+
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+						<div ng-switch-when="three" class="wave">
+							<div class="container-fluid">
+								<div class="row">
+									<table class="table table-striped">
+										<thead>
+											<tr>
+												<th>Active HOST(s)</th>
+												<th>NMON</th>
+												<th>JAVA</th>
+												<th>NODEMON</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr ng-repeat="host in configuration.deactivationresponse.host">
+												<td><strong>{{host.hostName | titleCase}}</strong></td>
+												<td><a class="fa tooltips"
+													ng-class="{'fa-exclamation go-warn' : !host.nmonResponseActivate.status , 
+															   'fa-check go-green' : host.nmonResponseActivate.status}">
+														<span>{{host.nmonResponseActivate.tooltip}}</span>
+												</a> {{host.nmonResponseActivate.nmonStatus.status}}</td>
+												<td><span> <a class="fa tooltips"
+														ng-class="{'fa-exclamation go-warn' : !host.jmonResponseDeActivate.status ,
+													 'fa-check go-green' : host.jmonResponseDeActivate.status}">
+															All Monitored Java Services <span>{{host.jmonResponseDeActivate.tooltip}}</span>
+													</a> {{valid.name}}
+												</span> <span
+													ng-repeat="invalid in host.jmonResponseActivate.services.invalid">
+														<a class="fa fa-check go-green"></a> {{invalid.name}}
+												</span></td>
+												<td><span
+													ng-repeat="valid in host.nodeMonResponseActivate.services.valid">
+														<a class="fa tooltips"
+														ng-class="{'fa-exclamation go-warn' : !valid.status , 'fa-check go-green' : valid.status}">
+															<span>{{valid.tooltip}}</span>
+													</a> {{valid.name}}
+												</span> <span
+													ng-repeat="invalid in host.nodeMonResponseActivate.services.invalid">
+														<a class="fa fa-check go-green"></a> {{invalid.name}}
+												</span></td>
+											</tr>
+
+										</tbody>
+									</table>
+								</div>
+								<div>
+									<button class="btn" ng-show="!configuration.spinner.isSpinning"
+										ng-class="{'btn-success':configuration.spinner.isSuccess, 
+												   'btn-danger':configuration.spinner.isFailure } "
+										ng-click="onClose()">Close</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

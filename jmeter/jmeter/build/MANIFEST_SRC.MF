@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.9.2
+Created-By: 1.7.0_71-mockbuild_2014_10_15_17_02-b00 (Oracle Corporatio
+ n)
+Built-By: sagandotra
+Extension-Name:  JMeter
+Specification-Title:  Apache JMeter
+Specification-Vendor:  Apache Software Foundation
+Implementation-Vendor:  Apache Software Foundation
+Implementation-Vendor-Id:  org.apache
+Implementation-Version: 2.10-SNAPSHOT.20141125
+

@@ -1,0 +1,402 @@
+<ol class="breadcrumb">
+	<li><a href="#">Home</a></li>
+	<li class="active">Hosts</li>
+</ol>
+<br/>
+<md-toolbar md-scroll-shrink ng-hide="hidden" style="background-color:white" class="md-short">
+	<div class="md-toolbar-tools">
+		<div class="alert"
+			ng-class="{'alert-success':success, 'alert-info':info, 'alert-warning':warning,
+			'alert-danger':danger}" role="alert">
+			 {{message}}
+		</div>
+	</div>
+</md-toolbar>
+
+<div layout="column" style="padding-bottom: 15px;">	
+
+	<md-toolbar class="md-accent" md-scroll-shrink>
+		<div class="md-toolbar-tools">
+			<div layout="row" layout-margin layout-fill layout-padding>
+				<div flex>
+						<a class="fa fa-desktop"></a> &nbsp; Manage Hosts 
+						<span class="label"><b><small>Total Hosts : {{hosts.length || 'N/A'}}</small></b></span>
+				</div>				
+				<div flex ng-init="currentView = 'Group by Role'">
+					<md-switch ng-model="byRole" aria-label="By Role" 
+						ng-change="toggleView(byRole)"
+						class="md-primary">
+						<small>{{currentView}}</small>
+  					</md-switch>
+				</div>
+			</div>
+		</div>
+	</md-toolbar>
+	<md-content class="md-padding">	
+		<div class="container-fluid">	
+				<div class="row">
+					<div class="col-lg-4">
+						<label for="searchRole">Find </label> 
+						<input type="text" class="form-control" id="searchRole" placeholder="Search by Host Name"
+						 ng-model="query" />
+					</div>
+					<div class="col-lg-4">
+					 	<label for="showactive">Show Ony Active Agents</label>
+					 	<md-checkbox ng-model="isactive" id="showactive" aria-label="isactive" />
+					</div>
+					<div class="col-lg-4">
+						<p> <b>Add a new Host</b></p>
+						<button type="button" class="btn btn-default btn-sm"
+							title="Add a new host"
+							data-toggle="modal" data-target="#hostModel">
+							<a class="fa fa-plus"></a>
+						</button>
+					</div>
+				</div>
+				<div class="row">
+					<hr/>
+				</div>
+				<div class="animate-switch-container"
+					ng-switch on="view">
+					
+					<div class="animate-switch" ng-switch-when="roleview">
+						<div class="row" class="navbar-hosts">
+					<div class="col-lg-3 sidebar" role="navigation">
+						<nav class="bs-docs-sidebar" du-spy-context du-scroll-container="scroll-container">
+						<ul class="nav bs-docs-sidenav">
+							<li ng-repeat="(rolename,host) in rolesWithHosts" du-smooth-scroll du-scrollspy id="{{rolename}}">
+								<h4><a href="" style={font-size:16px;}>
+									{{rolename | titleCase}}</a> </h4>
+							</li>
+					    </ul>
+					    </nav>
+					</div>
+						<pre>{{rolesWithHosts | json}}</pre>
+					
+					</div>
+					</div>
+					<div class="animate-switch" ng-switch-when="hostview">
+						<div class="row" class="navbar-hosts">
+					<div class="col-lg-3 sidebar" role="navigation">
+						<nav class="bs-docs-sidebar" du-spy-context du-scroll-container="scroll-container">
+						<ul class="nav bs-docs-sidenav">
+							<li ng-repeat="host in hosts" du-smooth-scroll du-scrollspy id="{{host.hostName}}">
+								<h4><a href="" ng-click="scrollTo(host.hostName)" style={font-size:16px;}>
+									{{host.hostName | titleCase}}</a> </h4>
+							</li>
+					    </ul>
+					    </nav>
+					</div>
+					<div class="col-lg-9 content" id="scroll-container" du-scroll-container>
+						<div ng-repeat="host in hosts | filter:query" ng-hide="isactive && !host.active"
+							id="{{host.hostName}}">
+							<md-whiteframe class="md-whiteframe-z1" layout layout-align="center center" style="width:100%;"
+								data-target=".navbar-hosts">
+   								<div layout="column" layout-fill>
+   									<md-content>
+	    								<md-toolbar ng-class="{'md-warn1' : !{{host.active}} }">
+	    										
+	      						   				<div class="md-toolbar-tools"> 
+	      						   					<a class="fa fa-desktop"></a>
+	      						   					&nbsp;&nbsp;&nbsp;
+													<h3>
+														<span><b> HostName </b> : {{host.hostName | titleCase}}</span>
+	    											</h3>
+		
+	    											<md-button class="md-fab" 
+	    												class="close" 
+	    												data-dismiss="modal" 
+	    												aria-label="Refresh"
+	    												ng-click="refresh(host)">
+	      						   			           <md-icon icon="/app/app/bower_components/material-design-icons/navigation/svg/design/ic_refresh_24px.svg" >
+	      						   			           </md-icon>     									   		
+	      						   					</md-button>
+	      						   					<div class="gap"></div>
+	      						   					<md-button class="md-fab" data-dismiss="modal" 
+	      						   						aria-label="Delete"
+	      						   						ng-click="showConfirm($event,host)">
+	      						   			           <md-icon icon="/app/app/bower_components/material-design-icons/action/svg/design/ic_delete_24px.svg">
+	      						   			           </md-icon>
+	      						   					</md-button>
+	      						   					<div class="gap"></div>
+	      						   					<md-button class="md-fab" data-dismiss="modal" 
+	      						   						aria-label="Edit"
+	      						   						ng-click="editHost(host)"
+	      						   						md-icon icon="edit">	   
+	      						   			           <md-icon icon="/app/app/bower_components/material-design-icons/editor/svg/design/ic_mode_edit_24px.svg">
+	      						   			           </md-icon>
+	      						   					</md-button>
+		    											
+	      						   				</div>	      						   				
+	      								</md-toolbar>
+	      							</md-content>
+  									<md-content ng-class="{hostactive : host.active , hostInactive : !host.active}">
+  											<div class="container-fluid">
+  												<div class="row">
+  													<div class="col-lg-4" >
+  													<div class="bs-callout bs-callout-info readout">
+  														<table class="table table-condensed">
+      						   								<thead>
+      						   									<tr>
+      						   										<td colspan="2"><p class="text-align=center">
+      						   											<b>System Details</b></p>
+      						   										</td>	      	
+      						   									</tr>
+      						   								</thead>
+      						   								<tbody>
+      						   									<tr>
+      						   										<td><b>Platform </b></td>
+      						   										<td>{{host.platform || 'N/A' | titleCase}}</td>
+      						   									</tr>
+      						   									<tr>
+      						   										<td><b>CPU Model [CPU count]</b></td>
+      						   										<td>{{host.cpuModel}} [{{host.cpus}}]
+      						   									</tr>
+      						   									<tr>
+      						   										<td><b>Uptime</b></td>
+      						   										<td>{{getUptime(host.uptime)}}</td>
+      						   									</tr>
+      						   								</tbody>
+      						   							</table>
+      						   							</div>
+      						   						</div>
+      						   						<div class="col-lg-4">
+      						   							<div class="bs-callout bs-callout-info readout">
+	      						   							<table class="table table-condensed">
+	      						   								
+	      						   								<thead>
+	      						   									<tr>
+	      						   										<td colspan="2">
+	      						   											<p><b>System Resources</b></p></td>	      	
+	      						   									</tr>
+	      						   								</thead>
+	      						   								<tbody>
+	      						   									<tr><br/></tr>
+	      						   									<tr>
+	      						   										<td><b>Total Memory </b></td>
+	      						   										<td>{{formatMem(host.totalMem)}} <b> GB</b></td>
+	      						   									</tr>
+	      						   									<tr>
+	      						   										<td><b>Free Memory</b></td>
+	      						   										<td>{{formatMem(host.freeMem)}} <b> GB</b></td>		      						   
+	      						   									</tr>
+	      						   									<tr>
+	      						   										<td><b>Load Avg</b></td>
+	      						   										<td>{{formatLoadAvg(host.loadavg)}}</td>
+	      						   									</tr>
+	      						   								</tbody>
+	      						   							</table>
+	      						   						</div>
+      						   						</div>
+      						   						<div class="col-lg-4">
+      						   							<div class="bs-callout bs-callout-info readout">
+	      						   							<table class="table table-condensed">
+	      						   								<thead>
+	      						   									<tr>
+	      						   										<td colspan="2">
+	      						   											<p><b>Network Interfaces</b></p></td>	      	
+	      						   									</tr>
+	      						   								</thead>
+	      						   								<tbody>
+	      						   									<tr><br/></tr>
+	      						   									<tr>
+	      						   										<td><b>Eth0: </b></td>
+	      						   										<td> <b> {{host.ethAddress1}}</b></td>
+	      						   									</tr>
+	      						   									<tr>
+	      						   										<td><b>Eth1: </b></td>
+	      						   										<td><b>{{host.ethaddress2}}</b></td>		      						   									
+	      						   									</tr>
+	      						   									<tr>
+	      						   										<td><b>Last Updated </b></td>
+	      						   										<td><b>{{getTime(host.lastUpdated)}}</b></td>		      						   									
+	      						   									</tr>			
+	      						   								</tbody>
+	      						   							</table>
+	      						   						</div>
+      						   						</div>
+      						   					</div>
+      						   					<div class="row">
+      						   					</div>
+      						   				</div>
+      						   				<div class="container-fluid">
+      						   					<div class="row">
+      						   							<md-content>
+      						   								<md-toolbar ng-class="{'md-warn1' : !{{host.active}} }">
+      						   									 <h2 class="md-toolbar-tools">
+															        <span><a class="fa fa-users fa-1x"></a>&nbsp;Registered Roles</span>
+															      </h2>
+      						   								</md-toolbar>
+      						   							</md-content>
+      						   						  	<md-content>		      						   						  		
+														      <md-whiteframe class="md-whiteframe-z1" layout layout-align="center right">
+														          	<table class="table table-condensed">
+														          		<thead>
+														          			<tr><th># of Components</th><th>Role Name </th><th> Component Names </th>
+														          		</thead>
+														          		<tbody>
+														          			<tr ng-repeat="role in host.roles">
+														                        <td><span class="badge badge-sm">{{role.components.length}}</span></td>
+														                        <td>
+														                        	<h3>{{role.name | titleCase}}
+														                        		
+														                        </h3>
+														          				<td>
+														          					<span ng-repeat="component in role.components">
+																          			<span class="label label-default" >{{component.name}}</span>
+																          			&nbsp; </span>
+														          				</td>
+														          		</tbody>
+														          	</table>
+														        </md-whiteframe>
+												  			</md-content>
+												  	
+      						   							</div>
+      						   							
+      						   					</div>	
+  									</md-content>
+									    <br>
+ 									</div>
+ 								</md-whiteframe>
+ 								 <md-toolbar  class="md-small" ng-class="{'md-warn1' : !{{host.active}} }">
+									 <h2 class="md-toolbar-tools">
+									 </h2>
+								</md-toolbar>
+								<hr/>
+ 								<br/>
+ 								<br/>
+ 								<br/>
+ 							</div>
+					</div>
+				</div>
+					
+					</div>
+				</div>
+				
+							<div class="col-lg-2">
+							</div>
+						</div>
+					</div>
+				</div>
+		
+	</md-content>
+</div>
+	
+
+<div class="modal fade" id="hostModel">
+	 <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel"><b>Add a new Host with Roles</b></h4>
+      </div>
+      <div class="modal-body">
+      	<form name="form" class="css-form" novalidate>
+      	   	<div class="container-fluid">
+      	   		<div class="row">
+      	   			<div class="col-lg-12">
+      		   			<label for="name">Add a Host</label>
+      		   			<div class="input-group col-lg-12" >
+		       				<input type="text" class="form-control" id="name" placeholder="Add a host name" 
+		       					   ng-model="selectedhost.name" name="name" 
+		       					   hostname required/>
+		       				<span class="input-group-addon" ng-show="form.name.$pending.hostname"><a class="fa fa-spinner spin" 
+			       		  		alt="Checking if rolename is available"></a>
+			       			</span>
+			       			<span class="input-group-addon" ng-show="form.name.$error.hostname">
+			       				<a class="fa fa-times " alt='Duplicate!' , style="color : red"/>
+			       			</span>
+		       			</div>
+		       		</div>
+		       	</div>
+		       	<div class="row">
+		       		<br/>
+		        	<label for="dropdown">Select from existing roles : </label>
+  					<ui-select multiple ng-model="selectedhost.myroles" 
+  							   theme="bootstrap" 
+  							   ng-disabled="disabled" 
+  							   title="Choose a role"
+  							   id="roles">
+    					<ui-select-match placeholder="Select roles...">
+    						{{$item.name}}
+    					</ui-select-match>
+    					<ui-select-choices repeat="role in roles | propsFilter : { name : $select.search } track by role.name">
+    						<div ng-bind-html="role.name | highlight: $select.search"></div>
+    						<small>
+    							role : {{role.name}}
+    							components : {{role.components | removeIds }}
+    						</small>
+      						
+    					</ui-select-choices>
+  					</ui-select>
+  					
+  					<hr>
+		       	</div>
+		       
+		    </div>
+		</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" ng-click="addHost(editHost.id)">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="edithostModel">
+	 <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel"><b>Edit host with Roles</b></h4>
+      </div>
+      <div class="modal-body">
+      	<form name="form" class="css-form" novalidate>
+      	   	<div class="container-fluid">
+      	   		<div class="row">
+      	   			<div class="col-lg-12">
+      		   			<label for="name">Edit a Host</label>
+      		   			<div class="input-group col-lg-12" >
+		       				<input type="text" class="form-control" id="name" placeholder="Edit a host name" 
+		       					   ng-model="selectedhost.name" name="name" 
+		       					   hostname required disabled/>
+		       					   
+		       			</div>
+		       		</div>
+		       	</div>
+		       	<div class="row">
+		       		<br/>
+		        	<label for="dropdown">Select from existing roles : </label>
+  					<ui-select multiple ng-model="selectedhost.myroles" 
+  							   theme="bootstrap" 
+  							   ng-disabled="disabled" 
+  							   title="Choose a role"
+  							   id="roles">
+    					<ui-select-match placeholder="Select roles...">
+    						{{$item.name}}
+    					</ui-select-match>
+    					<ui-select-choices repeat="role in roles | propsFilter : { name : $select.search } track by role.name">
+    						<div ng-bind-html="role.name | highlight: $select.search"></div>
+    						<small>
+    							role : {{role.name}}
+    							components : {{role.components | removeIds }}
+    						</small>
+      						
+    					</ui-select-choices>
+  					</ui-select>
+  					
+  					<hr>
+		       	</div>
+		       
+		    </div>
+		</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" ng-click="editHostSave()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+

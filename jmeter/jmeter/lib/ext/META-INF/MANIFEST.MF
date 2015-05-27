@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.8.4
+Created-By: 1.7.0_65-mockbuild_2014_07_16_06_33-b00 (Oracle Corporatio
+ n)
+Class-Path: ../../commons-configuration-1.10.jar ../../commons-lang-2.
+ 6.jar ../../commons-validator-1.4.0.jar ../../gson-2.2.4.jar ../../hi
+ bernate-validator-4.3.1.Final.jar ../../httpclient-4.3.1.jar ../../ht
+ tpcore-4.3.jar ../../jboss-logging-3.1.0.GA.jar ../../joda-time-2.3.j
+ ar ../../validation-api-1.1.0.Final.jar
+

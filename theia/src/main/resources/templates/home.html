@@ -1,0 +1,239 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+      lang="en" ng-app="myApp" class="no-js"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  <base href="/" />
+  
+  <title>PTAAS - Home</title>
+  <meta name="description" content="" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="theia/app/app/bower_components/html5-boilerplate/css/normalize.css" />
+  <!-- Bootstrap core CSS -->
+  <link href="theia/app/app/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="theia/app/app/bower_components/angular-xeditable/dist/css/xeditable.css" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="theia/app/app/bower_components/html5-boilerplate/css/main.css" />
+  <link rel="stylesheet" href="theia/app/app/bower_components/fontawesome/css/font-awesome.css" />
+  <link rel="stylesheet" href="theia/app/app/bower_components/angular-ui-select/dist/select.css" />
+  
+  <link rel="stylesheet" href="theia/app/app/bower_components/angular-material/angular-material.css"/>
+  <link rel="stylesheet" href="theia/app/app/bower_components/material-design-icons/sprites/css-sprite/sprite-av-black.css"/>
+  
+  <link rel="stylesheet" type="text/css" media="screen" href="theia/app/app/css/smartadmin-production-plugins.min.css"/>
+  <link rel="stylesheet" type="text/css" media="screen" href="theia/app/app/css/smartadmin-production.min.css"/>
+  <link rel="stylesheet" type="text/css" media="screen" href="theia/app/app/css/smartadmin-skins.min.css"/>
+  
+  
+  
+  <link rel="stylesheet" href="theia/app/app/app.css" />
+  <link rel="stylesheet" href="http://getbootstrap.com/assets/css/docs.min.css" />
+  <script src="theia/app/app/bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
+  
+  
+  
+</head>
+<body>
+
+				<!-- HEADER -->
+		<header id="header">
+			<div id="logo-group">
+
+				<!-- PLACE YOUR LOGO HERE -->
+				<span id="logo"> <i class="fa fa-paypal fa-2x"> &nbsp; &nbsp;&nbsp;PTAAS</i></span>
+				<!-- END LOGO PLACEHOLDER -->
+				
+				<span id="activity" class="activity-dropdown"> <i class="fa fa-user"></i> <b class="badge"> 21 </b> </span>
+				
+				<!-- AJAX-DROPDOWN : control this dropdown height, look and feel from the LESS variable file -->
+				<div class="ajax-dropdown">
+
+					<!-- the ID links are fetched via AJAX to the ajax container "ajax-notifications" -->
+					<div class="btn-group btn-group-justified" data-toggle="buttons">
+						<label class="btn btn-default">
+							<input type="radio" name="activity" id="ajax/notify/mail.html"></input>
+							Msgs (14) </label>
+						<label class="btn btn-default">
+							<input type="radio" name="activity" id="ajax/notify/notifications.html"></input>
+							notify (3) </label>
+						<label class="btn btn-default">
+							<input type="radio" name="activity" id="ajax/notify/tasks.html"></input>
+							Tasks (4) </label>
+					</div>
+
+					<!-- notification content -->
+					<div class="ajax-notifications custom-scroll">
+
+						<div class="alert alert-transparent">
+							<h4>Click a button to show messages here</h4>
+							This blank page message helps protect your privacy, or you can show the first message here automatically.
+						</div>
+
+						<i class="fa fa-lock fa-4x fa-border"></i>
+
+					</div>
+					<!-- end notification content -->
+
+					<!-- footer: refresh area -->
+					<span> Last updated on: 12/12/2013 9:43AM
+						<button type="button" class="btn btn-xs btn-default pull-right">
+							<i class="fa fa-refresh"></i>
+						</button> </span>
+					<!-- end footer -->
+
+				</div>
+				<!-- END AJAX-DROPDOWN -->
+			</div>
+
+			<!-- monitoring dropdown -->
+			<div class="project-context hidden-xs">
+
+				<span class="label">Monitoring:</span>
+				<span class="project-selector dropdown-toggle" data-toggle="dropdown">Configure <i class="fa fa-angle-down"></i></span>
+
+				<!-- Suggestion: populate this list with fetch and push technique -->
+				<ul class="dropdown-menu" role="menu">
+            		<li><a class="fa fa-cubes" href="/theia/#!/systemconfiguration">&nbsp;System Configuration</a></li>
+            		<li><a class="fa fa-desktop" href="/theia/#!/hosts">&nbsp;Hosts</a></li>
+            		<li><a class="fa fa-users" href="/theia/#!/rolesview">&nbsp;Roles</a></li>
+		            <li class="divider"></li>
+        		    <li><a class="fa fa-cog" href="/theia/#!/componentsview">&nbsp;Components</a></li>
+          		</ul>
+				<!-- end dropdown-menu-->
+
+			</div>
+			<!-- end monitoring dropdown -->
+			
+			<!-- jmeter dropdown -->
+			<div class="project-context hidden-xs">
+
+				<span class="label">JMeter:</span>
+				<span class="project-selector dropdown-toggle" data-toggle="dropdown">Configure and Run 
+					<i class="fa fa-angle-down"></i>
+				</span>
+
+				<!-- Suggestion: populate this list with fetch and push technique -->
+				<ul class="dropdown-menu" role="menu">
+            		<li><a class="fa fa-cubes" href="/theia/#!/jmeter">&nbsp;Build L&amp;P Test</a></li>            		
+          		</ul>
+				<!-- end dropdown-menu-->
+
+			</div>
+			<!-- end jmeter dropdown -->
+			
+			<!-- reports dropdown -->
+			<div class="project-context hidden-xs">
+
+				<span class="label">Reporting:</span>
+				<span class="project-selector dropdown-toggle" data-toggle="dropdown">Test Reports 
+					<i class="fa fa-angle-down"></i>
+				</span>
+
+				<!-- Suggestion: populate this list with fetch and push technique -->
+				<ul class="dropdown-menu" role="menu">
+            		<li><a class="fa fa-files-o" href="/theia/#!/jmetertestresults">&nbsp;Test Results</a></li>            		
+          		</ul>
+				<!-- end dropdown-menu-->
+
+			</div>
+			<!-- end reports dropdown -->
+			
+
+			<!-- pulled right: nav area -->
+			<div class="pull-right">																				
+
+				<!-- logout button -->
+				<div id="logout" class="btn-header transparent pull-right">
+					<span> <a href="/theia/logout" title="Sign Out" data-action="userLogout" 
+					data-logout-msg="You can improve your security further after logging out by closing this opened browser">
+					<i class="fa fa-power-off"></i></a>						
+					 </span>
+				</div>
+				<!-- end logout button -->				
+			</div>
+			<!-- end pulled right: nav area -->
+
+		</header>
+		<!-- END HEADER -->
+			
+  <!--[if lt IE 7]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+  <![endif]-->
+
+  <br/>
+  <div ng-view="true"></div>
+
+  <div>
+	 <span class="greeting" th:inline="text" id="corpid">[[${#httpServletRequest.remoteUser}]]</span>
+
+  </div>	
+	
+  <!-- In production use:
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
+  -->
+  <!-- Bootstrap core JavaScript
+  ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+    
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script type="text/javascript" src="theia/app/app/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="theia/app/app/bower_components/angular/angular.js"></script>
+  <script src="theia/app/app/bower_components/angular-sanitize/angular-sanitize.js"></script>
+  <script src="theia/app/app/bower_components/angular-resource/angular-resource.js"></script>
+  <script src="theia/app/app/bower_components/angular-route/angular-route.js"></script>
+  <script src="theia/app/app/bower_components/angular-xeditable/dist/js/xeditable.js"></script>
+  <script src="theia/app/app/bower_components/angular-ui-select/dist/select.js"></script>
+  <script src="theia/app/app/bower_components/hammerjs/hammer.js"></script>
+  <script src="theia/app/app/bower_components/angular-scroll/angular-scroll.js"></script>
+  <script src="theia/app/app/bower_components/angular-bootstrap/ui-bootstrap.js"></script>
+  <script src="theia/app/app/bower_components/angular-strap/dist/angular-strap.js"></script>
+  <script src="theia/app/app/bower_components/angular-strap/dist/angular-strap.tpl.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.6/angular-animate.js"></script>
+  
+  <script src="theia/app/app/js/app.config.js"></script>
+  
+ 
+  <script src="theia/app/app/js/notification/SmartNotification.min.js"></script>
+  <script src="theia/app/app/js/smartwidgets/jarvis.widget.min.js"></script>
+  <script src="theia/app/app/js/plugin/bootstrap-wizard/jquery.bootstrap.wizard.min.js"></script>
+  
+  <script src="theia/app/app/js/app.min.js"></script>
+  <script src="theia/app/app/bower_components/underscore/underscore.js"></script>
+  <script src="theia/app/app/bower_components/flot/jquery.flot.js"></script>
+
+	
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.6/angular-aria.js"></script>
+  <!-- Angular Material Javascript using RawGit to load directly from `bower-material/master` -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.6.1/angular-material.min.js"></script>
+
+
+  
+  <script src="theia/app/app/app.js"></script>
+  <script src="theia/app/app/view1/view1.js"></script>
+  <script src="theia/app/app/view2/view2.js"></script>
+  <script src="theia/app/app/jmeter/jmeter.js"></script>
+  <script src="theia/app/app/jmeter/jmetertestresults.js"></script>
+  <script src="theia/app/app/componentsview/componentsview.js"></script>
+  <script src="theia/app/app/rolesview/roles.js"></script>
+  <script src="theia/app/app/components/version/version.js"></script>
+  <script src="theia/app/app/hosts/hosts.js"></script>
+  <script src="theia/app/app/sysconfig/config.js"></script>
+  <script src="theia/app/app/components/filter/filter.js"></script>
+  <script src="theia/app/app/components/version/version-directive.js"></script>
+  <script src="theia/app/app/components/version/interpolate-filter.js"></script>
+  
+  <script type="text/javascript">
+  $(function () {
+	  $('[data-toggle="popover"]').popover();
+	});
+  
+  </script>
+  
+</body>
+</html>

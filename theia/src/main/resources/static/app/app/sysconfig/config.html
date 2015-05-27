@@ -1,0 +1,380 @@
+<ol class="breadcrumb">
+	<li><a href="#/view1">Home</a></li>
+	<li class="active">System Configuration</li>
+</ol>
+<br/>
+<md-toolbar md-scroll-shrink ng-hide="hidden" style="background-color:white" class="md-short">
+	<div class="md-toolbar-tools">
+		<div class="alert"
+			ng-class="{'alert-success':success, 'alert-info':info, 'alert-warning':warning,
+			'alert-danger':danger}" role="alert">
+			 {{message}}
+		</div>
+	</div>
+</md-toolbar>
+
+<div layout="column" style="padding-bottom: 15px;">	
+
+	<md-toolbar class="md-accent" md-scroll-shrink>
+		<div class="md-toolbar-tools">
+			<div layout="column">
+				<div layout="row" layout-align="center center">
+						<a class="fa fa-cogs"></a> &nbsp; Manage System Configuration 
+						<span class="label"><b><small>Total Configurations : {{configurations.length || 'N/A'}}</small></b></span>
+				</div>
+				
+			</div>
+		</div>
+	</md-toolbar>
+	<md-content class="md-padding">	
+		<div class="container-fluid">	
+				<div class="row">
+					<div class="col-lg-4">
+						<label for="searchRole">Find </label> 
+						<input type="text" class="form-control" id="searchRole" placeholder="Search by System Configuration Name"
+						 ng-model="query" />
+					</div>
+					<div class="col-lg-4">
+					 	
+					</div>
+					<div class="col-lg-4">
+						<p> <b>Create a new System Configuration</b></p>
+						<button type="button" class="btn btn-default btn-sm"
+							title="Add a new System Configuration"
+							data-toggle="modal" data-target="#sysconfigModel">
+							<a class="fa fa-plus"></a>
+						</button>
+					</div>
+				</div>
+				<div class="row">
+					<hr/>
+				</div>
+				<div class="row">
+					<div class="col-lg-3" sidebar>
+						<nav class="bs-docs-sidebar" du-spy-context du-scroll-container="scroll-container">
+							<ul class="nav bs-docs-sidenav">
+								<li ng-repeat="configuration in configurations" du-smooth-scroll du-scrollspy id="{{configuration.name}}">
+									<a href="" ng-click="scrollTo(host.hostName)" style={font-size:16px;}>
+										<h4>{{configuration.name | titleCase}}</h4>
+									</a>
+								</li>
+					    	</ul>
+					    </nav>
+					</div>
+					<div class="col-lg-9 content" id="scroll-container" du-scroll-container>
+						<div ng-repeat="configuration in configurations | filter:query"
+							style="position : relative;" id="{{configuration.name}}">
+							<md-whiteframe class="md-whiteframe-z1" layout layout-align="center center" style="width:100%;">
+   								<div layout="column" layout-fill>
+   									<md-content>
+	    								<md-toolbar>
+	    										
+	      						   				<div class="md-toolbar-tools"> 
+	      						   					<a class="fa fa-cubes"></a>
+	      						   					&nbsp;&nbsp;&nbsp;
+													<h3>
+														<span><b> {{configuration.name | titleCase}} </b></span>
+	    											</h3>
+		
+	    											<md-button class="md-fab" 
+	    												class="close" 
+	    												data-dismiss="modal" 
+	    												aria-label="Refresh"
+	    												ng-click="refresh()">
+	      						   			           <md-icon icon="/app/app/bower_components/material-design-icons/navigation/svg/design/ic_refresh_24px.svg" >
+	      						   			           </md-icon>     									   		
+	      						   					</md-button>
+	      						   					<div class="gap"></div>
+	      						   					<md-button class="md-fab" data-dismiss="modal" 
+	      						   						aria-label="Delete"
+	      						   						ng-click="showConfirm($event,configuration)">
+	      						   			           <md-icon icon="/app/app/bower_components/material-design-icons/action/svg/design/ic_delete_24px.svg">
+	      						   			           </md-icon>
+	      						   					</md-button>
+	      						   					<div class="gap"></div>
+	      						   					<md-button class="md-fab" data-dismiss="modal" 
+	      						   						aria-label="Edit"
+	      						   						ng-click="editConfiguration(configuration)"
+	      						   						md-icon icon="edit">	   
+	      						   			           <md-icon icon="/app/app/bower_components/material-design-icons/editor/svg/design/ic_mode_edit_24px.svg">
+	      						   			           </md-icon>
+	      						   					</md-button>
+		    											
+	      						   				</div>	      						   				
+	      								</md-toolbar>
+	      							</md-content>
+  									<md-content">
+  											<div class="container-fluid">
+  												<div class="row">
+  													<div class="col-lg-4">
+  														<table class="table table-condensed table-striped">
+      						   								<thead>
+      						   									<tr>
+      						   										<td colspan="2"><p class="text-align=center">
+      						   											<b>Host Details</b></p>
+      						   										</td>	      	
+      						   									</tr>
+      						   								</thead>
+      						   								<tbody>
+      						   									<tr><br/></tr>
+      						   									<tr>
+      						   										<td><b>Active Hosts </b></td>
+      						   										<td>{{getActiveHosts()}}</td>
+      						   									</tr>
+      						   									<tr>
+      						   										<td><b>Inactive Hosts</b></td>
+      						   										<td>{{inactive}}</td>
+      						   									</tr>
+      						   									
+      						   								</tbody>
+      						   							</table>
+      						   						</div>
+      						   						<div class="col-lg-4">
+      						   							<table class="table table-condensed table-striped">
+      						   								<thead>
+      						   									<tr>
+      						   										<td colspan="2"><p class="text-align=center">
+      						   											<b>Component Details</b></p>
+      						   										</td>	      	
+      						   									</tr>
+      						   								</thead>
+      						   								<tbody>
+      						   									<tr><br/></tr>
+      						   									<tr>
+      						   										<td><b>Total Java packages </b></td>
+      						   										<td>getActiveHosts()</td>
+      						   									</tr>
+      						   									<tr>
+      						   										<td><b>Total NodeJS packages</b></td>
+      						   										<td>{{configurations.h}}
+      						   									</tr>
+      						   									
+      						   								</tbody>
+      						   							</table>
+      						   							
+      						   						</div>
+      						   						<div class="col-lg-4">
+      						   							<br/>
+      						   							<table class="table table-condensed table-striped">
+      						   								<thead>
+      						   									<tr>
+      						   										<td colspan="2">
+      						   											<p><b>NMON Status</b></p></td>	      	
+      						   									</tr>
+      						   								</thead>
+      						   								<tbody>
+      						   	
+      						   									<tr>
+      						   										<td><b>Started <small>(MM/DD/YY HH:MI:SS)</small></b></td>
+      						   										<td> <b> </b></td>
+      						   									</tr>
+      						   									<tr>
+      						   										<td><b><a class="fa fa-line-chart"></a>&nbsp;Graphite</b></td>
+      						   										<td><b></b></td>		      						   									
+      						   									</tr>
+      						   												
+      						   								</tbody>
+      						   							</table>
+      						   						</div>
+      						   					</div>
+      						   					<div class="row">
+      						   						<br/>
+      						   					</div>
+      						   				</div>
+      						   				<div class="container-fluid">
+      						   					<div class="row">
+      						   							<md-content>
+      						   								<md-toolbar>
+															      <div layout="row" layout-align="end center">
+															      	<h2 class="md-toolbar-tools">
+															        	<span><a class="fa fa-desktop fa-1x"></a>&nbsp;Registered Hosts</span> 															    
+															      	</h2>															      	
+															      	<span class="badge">{{configuration.hosts.length}}
+															      	<md-tooltip> Number of hosts</md-tooltip> 
+															      	
+															      	</span>
+															      	<span></span>
+															      </div>
+      						   								</md-toolbar>
+      						   							</md-content>
+      						   						  	<md-content>		      						   						  		
+														      <md-whiteframe class="md-whiteframe-z1" layout layout-align="center right">
+														      	<md-content>
+														      		<md-list>
+														      			<md-item ng-repeat="host in configuration.hosts" style="background-color:'azure'">
+														      				<md-item-content ng-class-odd="'odd-host'" ng-class-even="'even-host'">
+														      					<div class="md-tile-left">
+														      						<div style="padding : 10px">
+														      						<a class="fa fa-2x" ng-class="{'fa-thumbs-up go-green': {{host.active}},
+														                        			'fa-thumbs-down go-red' : !{{host.active}} }"></a>
+														                        	</div>
+														      					</div>
+														      					<div class="md-tile-content confighost bs-callout bs-callout-info">
+														      						<h2><strong>{{host.hostName | titleCase}}</strong></h2>
+														      						<br/>
+														      						<div ng-repeat="role in host.roles">
+														      							<h3><strong>{{$index+1}}. {{role.name | titleCase}}</strong>&nbsp;&nbsp;
+														      								<small>{{role.components.length}}</small></h3>
+														      							<table class="table table-condensed">
+														      								<tbody>
+														      									<tr>
+														      										<td ng-repeat="component in role.components">
+														      											<h3><span class="label" ng-class="{'label-danger' : !isComponentActive(host,component),
+														      												'label-success' : isComponentActive(host,component)}">{{component.name}}</span>&nbsp;&nbsp;</h3>
+														      										</td>
+														      									</tr>
+														      								</tbody>
+														      							</table>	
+														      							<br/>													      					
+														      						</div>														      						
+														      						<hr/>
+														      					</div>
+														      				</md-item-content>
+														      			</md-item>
+														      		</md-list>
+														      	</md-content>
+														      		
+														      
+														          
+														          	<br/>
+														          	<br/>
+														        </md-whiteframe>
+												  			</md-content>
+												  		
+      						   							</div>
+      						   							
+      						   					</div>	
+  									</md-content>
+									    <br>
+ 									</div>
+ 								</md-whiteframe>
+ 								 <md-toolbar  class="md-small"">
+									 <h2 class="md-toolbar-tools">
+									 </h2>
+								</md-toolbar>
+								<hr/>
+ 								<br/>
+ 								<br/>
+ 								<br/>
+ 							</div>
+					</div>
+				</div>
+							<div class="col-lg-2">
+							</div>
+						</div>
+					</div>
+				</div>
+		
+	</md-content>
+</div>
+	
+
+<div class="modal fade" id="sysconfigModel">
+	 <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel"><b>Create a new System Configuration with Hosts</b></h4>
+      </div>
+      <div class="modal-body">
+      	<form name="form" class="css-form" novalidate>
+      	   	<div class="container-fluid">
+      	   		<div class="row">
+      	   			<div class="col-lg-12">
+      		   			<label for="name">System Configuration Name</label>
+      		   			<div class="input-group col-lg-12" >
+		       				<input type="text" class="form-control" id="name" placeholder="Set a configuration name" 
+		       					   ng-model="selectedconfig.name" name="name" 
+		       					   sysconfig required/>
+		       				<span class="input-group-addon" ng-show="form.name.$pending.sysconfig"><a class="fa fa-spinner spin" 
+			       		  		alt="Checking if config name is available"></a>
+			       			</span>
+			       			<span class="input-group-addon" ng-show="form.name.$error.sysconfig">
+			       				<a class="fa fa-times " , style="color : red"></a>
+			       			</span>
+		       			</div>
+		       		</div>
+		       	</div>
+		       	<div class="row">
+		       		<br/>
+		        	<label for="dropdown">Select from existing Hosts : </label>
+  					<ui-select multiple ng-model="selectedconfig.hosts" 
+  							   theme="bootstrap" 
+  							   ng-disabled="disabled" 
+  							   title="Choose a host machine"
+  							   id="sysconfig">
+    					<ui-select-match placeholder="Select hosts...">
+    						{{$item.hostName}}
+    					</ui-select-match>
+    					<ui-select-choices repeat="host in hosts | propsFilter: {hostName: $select.search}">
+    						<div ng-bind-html="host.hostName | highlight: $select.search"></div>
+    						<small>
+    							[<a class="fa" ng-class="{'fa-thumbs-up go-green': {{host.active}},
+    							'fa-thumbs-down go-red' : !{{host.active}} }"></a>]
+    							assigned to : {{getSystemConfig(host.id)}}
+    						</small>							
+    					</ui-select-choices>
+  					</ui-select>
+		       	</div>
+		    </div>
+		</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" ng-click="addSysConfig()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editSysconfigModel">
+	 <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel"><b>Edit System Configuration with Hosts</b></h4>
+      </div>
+      <div class="modal-body">
+      	<form name="form" class="css-form" novalidate>
+      	   	<div class="container-fluid">
+      	   		<div class="row">
+      	   			<div class="col-lg-12">
+      		   			<label for="name">System Configuration Name</label>
+      		   			<div class="input-group col-lg-12" >
+		       				<input type="text" class="form-control" id="name" placeholder="Set a configuration name" 
+		       					   ng-model="selectedconfig.name" name="name" 
+		       					   sysconfig required disabled/>
+		       			</div>
+		       		</div>
+		       	</div>
+		       	<div class="row">
+		       		<br/>
+		        	<label for="dropdown">Select from existing Hosts : </label>
+  					<ui-select multiple ng-model="selectedconfig.hosts" 
+  							   theme="bootstrap" 
+  							   ng-disabled="disabled" 
+  							   title="Choose a host machine"
+  							   id="sysconfig">
+    					<ui-select-match placeholder="Select hosts...">
+    						{{$item.hostName}}
+    					</ui-select-match>
+    					<ui-select-choices repeat="host in hosts | propsFilter: {hostName: $select.search}">
+    						<div ng-bind-html="host.hostName | highlight: $select.search"></div>
+    						<small>
+    							[<a class="fa" ng-class="{'fa-thumbs-up go-green': {{host.active}},
+    							'fa-thumbs-down go-red' : !{{host.active}} }"></a>]
+    							assigned to : {{getSystemConfig(host.id)}}
+    						</small>							
+    					</ui-select-choices>
+  					</ui-select>
+		       	</div>
+		    </div>
+		</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" ng-click="editSysConfigSave()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
