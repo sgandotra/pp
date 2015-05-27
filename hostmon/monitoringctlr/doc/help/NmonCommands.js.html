@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: js/NmonCommands.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: js/NmonCommands.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+    @description: nmon command implementation
+ **/
+
+var os                      = require('os'),
+    _                       = require('underscore'),
+    path                    = require('path'),
+    fs                      = require('fs'),
+    util                    = require('util'),
+    Q                       = require('q'),
+    RemoteExec              = require('./RemoteExec');
+
+/**
+ *
+ * @constructor
+ */
+var NmonCommands = function(req,res) {
+    this.req        = req;
+    this.res        = res;
+    this.af         = "/opt/performance-automation-framework";
+    this.nmonfolder = path.join(this.af,"Tools/hostmon/NMON");
+    this.location   = this.req.body && this.req.body.af && this.req.body.af.location;
+    this.response   = {
+        status : null,
+        timestamp : new Date(),
+        description : null
+    };
+    try {
+        if(this.location) {
+            fs.statSync(this.req.body.af.location);
+            console.log("User defined af location found");
+            this.af            = this.req.body.af.location;
+            this.nmonfolder = path.join(this.af,"Tools/hostmon/NMON");
+            console.log("user defined nodemon folder : " + this.nmonfolder);
+        }
+    }
+    catch(e) {
+        console.log
+        this.response.status      = "ERROR";
+        this.response.description = e;
+        this.res.json(500,this.response);
+    }
+}
+
+NmonCommands.prototype.sendSuccessInResponse = function(value) {
+    this.response.status   = "SUCCESS";
+    this.response.description = value.replace(/\\/g, '').split('\n');
+    console.log("res : " + util.inspect(this.response));
+    this.res.json(this.response);
+};
+
+NmonCommands.prototype.sendErrorInResponse   = function(error) {
+    this.response.status      = "ERROR";
+    this.response.description = error.toString();
+    this.res.json(500,this.response);
+};
+
+NmonCommands.prototype.status = function() {
+    var self      = this,
+        getStatus =  function() {
+        var remoteExec     = new RemoteExec(),
+            shellScript    = path.join(self.nmonfolder,"status.sh"),
+            cmd            = [shellScript,"-j"],
+            deferred       = Q.defer(),
+            opts           = {
+                cwd : this.nmonfolder,
+                maxBuffer : 1024*200
+            }
+
+        console.log("Executing shell script : " +shellScript);
+
+        remoteExec.setExecOpts(opts);
+        remoteExec.execCmd(cmd.join(" "),deferred);
+        return deferred.promise;
+    };
+
+    getStatus()
+        .then(function(value)  {
+            self.sendSuccessInResponse.apply(self,[value]);
+        }, function(error) {
+            self.sendErrorInResponse.apply(self,[error]);
+        });
+}
+
+NmonCommands.prototype.activate = function() {
+    var self        = this,
+        doActivate  = function() {
+            var remoteExec  = new RemoteExec(),
+                shellScript = path.join(self.nmonfolder,"run.sh"),
+                nmonOutFile = self.getNmonOutputFile(),
+                frequency   = self.req.body.af.nmon.frequency || 10,
+                samples     = self.req.body.af.nmon.samples   || 8640,
+                graphite    = self.req.body.af.nmon.graphite  || undefined,
+                cmd,
+                opts           = {
+                    cwd : this.nmonfolder,
+                    maxBuffer : 1024*200
+                };
+
+            graphite = (typeof graphite !== 'undefined' && graphite == "false") ? "" : "-g";
+
+            cmd = [shellScript,"-f",frequency,"-s",samples,graphite,"-o",nmonOutFile];
+
+            console.log("Executing cmd : " +cmd.join(" "));
+
+            remoteExec.setExecOpts(opts);
+            return remoteExec.spawnCmd(cmd);
+        }
+
+    doActivate()
+        .then(function(value)  {
+        self.sendSuccessInResponse.apply(self,[value]);
+    }, function(error) {
+        self.sendErrorInResponse.apply(self,[error]);
+    });
+
+}
+
+NmonCommands.prototype.deactivate = function() {
+    var self        = this,
+        doDeActivate  = function() {
+            var remoteExec     = new RemoteExec(),
+                shellScript    = path.join(self.nmonfolder,"stop.sh"),
+                cmd            = [shellScript,"-j"],
+                deferred       = Q.defer(),
+                opts           = {
+                    cwd : this.nmonfolder,
+                    maxBuffer : 1024*200
+                }
+
+            console.log("Executing shell script : " +shellScript);
+
+            remoteExec.setExecOpts(opts);
+            remoteExec.execCmd(cmd.join(" "),deferred);
+            return deferred.promise;
+        }
+
+    doDeActivate()
+        .then(function(value)  {
+            self.sendSuccessInResponse.apply(self,[value]);
+        }, function(error) {
+            self.sendErrorInResponse.apply(self,[error]);
+        });
+
+}
+
+NmonCommands.prototype.getNmonOutputFile = function() {
+    var location   = path.join(this.af,"/working"),
+        date       =  new Date(),
+        folderName = date.getFullYear() +
+                     "" + date.getMonth() +
+                     "" +date.getDay() +
+                     "_" + date.getHours()+
+                     "00"+
+                     "" +
+                     date.getMinutes(),
+        fileName   =  os.hostname() + folderName + ".nmon",
+        absPath    = path.join(location,folderName,fileName);
+    console.log("Nmon out file : " +absPath);
+    return absPath;
+}
+
+module.exports = NmonCommands
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="JmeterManager.html">JmeterManager</a></li><li><a href="JmonCommands.html">JmonCommands</a></li><li><a href="ManageXmlTemplate.html">ManageXmlTemplate</a></li><li><a href="NmonCommands.html">NmonCommands</a></li><li><a href="NodeMonCommands.html">NodeMonCommands</a></li><li><a href="global.html#RemoteExec">RemoteExec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_">_</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#cpu">cpu</a></li><li><a href="global.html#deactivate">deactivate</a></li><li><a href="global.html#details">details</a></li><li><a href="global.html#emitLines">emitLines</a></li><li><a href="global.html#exec">exec</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#getList">getList</a></li><li><a href="global.html#https">https</a></li><li><a href="global.html#log4js">log4js</a></li><li><a href="global.html#memory">memory</a></li><li><a href="global.html#os">os</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#servicelist">servicelist</a></li><li><a href="global.html#status">status</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#util">util</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Nov 19 2014 14:50:36 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

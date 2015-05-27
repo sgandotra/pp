@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: js/StageHelper.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: js/StageHelper.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * Created with JetBrains WebStorm.
+ * User: sagandotra
+ * Date: 5/13/14
+ * Time: 11:25 AM
+ * To change this template use File | Settings | File Templates.
+ */
+
+var path        = require('path'),
+    Q           = require('q'),
+    RemoteExec  = require('./RemoteExec'),
+    fileSystem  = require('fs'),
+    util        = require('util'),
+    os          = require('os');
+
+module.exports = (function() {
+
+    var defaults = {
+        restartScriptLoc : "/x/tools/common/mystart"
+    },
+        deployFolder;
+
+
+    return {
+        restartService : function(serviceDeploymentFolder,deferred) {
+
+            if(serviceDeploymentFolder && fileSystem.existsSync(serviceDeploymentFolder)) {
+                var remoteExec = new RemoteExec(),
+                    cmd  = ["export","TERM=vt100",";",
+                            "cd",serviceDeploymentFolder,";",
+                            "./shutdown.sh",";",defaults.restartScriptLoc + " ./start.sh"
+                    ],
+                    opts =  {
+                        cwd : serviceDeploymentFolder  ,
+                        maxBuffer : 1024*200,
+                    },
+                    serviceName = serviceDeploymentFolder.substring(serviceDeploymentFolder.lastIndexOf('/'));
+
+                remoteExec.setExecOpts(opts);
+
+                console.log("Restarting service : " + serviceName + " with cmd " + cmd.join(" "));
+                remoteExec._spawnCmd([cmd.join(" ")],deferred);
+                return deferred.promise;
+            };
+            throw new Error("Folder : " +serviceDeploymentFolder + " does not exist!");
+
+
+        },
+        getDeploymentFolder : function() {
+            hostname = os.hostname().toUpperCase();
+            deployFolder = path.join("/x/web",hostname);
+            if(fileSystem.existsSync(deployFolder)) {
+                util.print("Deploy Folder :"+ deployFolder + "\n");
+                return deployFolder;
+            }
+            throw new Error("Deployment folder : " + deployFolder + " does not exist");
+        },
+        verifyService        :  function(servicename) {
+            var absServicePath;
+            util.log("Received a request to verify : " +servicename);
+            if(servicename && servicename.length > 0) {
+                if(!deployFolder) {
+                    this.getDeploymentFolder();
+                }
+                absServicePath  = path.join(deployFolder,servicename);
+                if(fileSystem.existsSync(absServicePath)) {
+                    util.print("Service found at :" + absServicePath + "\n");
+                    return absServicePath;
+                }
+            }
+            console.log("Service name at location : " +absServicePath + " does not exist");
+            throw new Error("Service name at location : " +absServicePath + " does not exist");
+        },
+        isServiceRunning  : function(servicename,servicetype,deferred) {
+            var remoteExec = new RemoteExec(),
+                cmd = ['ps','-ef','|','grep','-i',servicename,'|','grep',servicetype,'|','grep','-v','grep','|','wc','-l'];
+                remoteExec.execCmd(cmd.join(" "),deferred);
+        },
+        execCmd       : function(_cwd,cmd,deferred) {
+            var remoteExec = new RemoteExec(),
+                opts = {
+                    cwd : _cwd  ,
+                    maxBuffer : 1024*200,
+                };
+            remoteExec.setExecOpts(opts);
+            remoteExec.execCmd(cmd,deferred);
+        },
+        spawnCmd  : function(_cwd,cmd,deferred) {
+
+            var remoteExec = new RemoteExec(),
+                opts = {
+                    cwd : _cwd  ,
+                    maxBuffer : 1024*200,
+                };
+            remoteExec.setExecOpts(opts);
+            return remoteExec._spawnCmd(cmd.split(" "),deferred);
+        }
+
+    };
+
+
+})();
+
+
+
+
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="JmeterManager.html">JmeterManager</a></li><li><a href="JmonCommands.html">JmonCommands</a></li><li><a href="ManageXmlTemplate.html">ManageXmlTemplate</a></li><li><a href="NmonCommands.html">NmonCommands</a></li><li><a href="NodeMonCommands.html">NodeMonCommands</a></li><li><a href="global.html#RemoteExec">RemoteExec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_">_</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#cpu">cpu</a></li><li><a href="global.html#deactivate">deactivate</a></li><li><a href="global.html#details">details</a></li><li><a href="global.html#emitLines">emitLines</a></li><li><a href="global.html#exec">exec</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#getList">getList</a></li><li><a href="global.html#https">https</a></li><li><a href="global.html#log4js">log4js</a></li><li><a href="global.html#memory">memory</a></li><li><a href="global.html#os">os</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#servicelist">servicelist</a></li><li><a href="global.html#status">status</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#util">util</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Nov 19 2014 14:50:36 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

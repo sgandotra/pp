@@ -1,0 +1,4 @@
+config: 
+  {
+  graphitehost: stage2lp48.qa.paypal.com
+   }

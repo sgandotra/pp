@@ -1,0 +1,33 @@
+NMON Overview:
+The nmon tool is designed for AIX and Linux performance specialists to use for monitoring and analyzing performance data,
+including:
+	- CPU utilization
+	- Memory use
+	- Kernel statistics and run queue information
+	- Disks I/O rates, transfers, and read/write ratios
+	- Free space on file systems
+	- Disk adapters
+	- Network I/O rates, transfers, and read/write ratios
+	- Paging space and paging rates
+	- CPU and AIX specification
+	- Top processors
+	- User-defined disk groups
+	- Machine details and resources
+	- Network File System (NFS)
+
+PayPal Adaptation:
+NMON is made available to work stand-alone, or in conjunction with other projects hosted in this repository to
+invoke NMON on a remote stage from a test automation script, and to build HTML reports from the raw results
+which can be generated from within a Fusion job or some other mechanism.
+
+Scripts:
+The following included scripts are needed to use nmon within a test automation framework.  They should live
+in the same NMON_HOME path as the nmon binary.
+
+ - clean.sh <directory> - cleans the results by removing a directory relative to NMON_HOME
+    example invocation:	clean.sh data/test-123
+ 	
+ - run.sh <samples> <frequency (secs)> [output directory]
+ 	example invocation (10 samples at 6 sec intervals): nmon 10 6 data/nmon-1-minute-performance
+ 	
+ - stop.sh: stops all nmon binaries running on the system 

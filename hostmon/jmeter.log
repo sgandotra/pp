@@ -1,0 +1,84 @@
+2015/05/27 09:26:36 INFO  - jmeter.util.JMeterUtils: Setting Locale to en_US 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: Loading user properties from: /opt/jmeter/apache-jmeter-2.9/bin/user.properties 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: Loading system properties from: /opt/jmeter/apache-jmeter-2.9/bin/system.properties 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: Copyright (c) 1998-2013 The Apache Software Foundation 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: Version 2.9 r1437961 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: java.version=1.7.0_45 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: java.vm.name=Java HotSpot(TM) 64-Bit Server VM 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: os.name=Mac OS X 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: os.arch=x86_64 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: os.version=10.10.3 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: file.encoding=UTF-8 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: Default Locale=English (United States) 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: JMeter  Locale=English (United States) 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: JMeterHome=/opt/jmeter/apache-jmeter-2.9 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: user.dir  =/Users/sagandotra/git/hostmon 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: PWD       =/Users/sagandotra/git/hostmon 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: IP: 10.244.64.210 Name: LM-SJN-00872702 FullName: lm-sjn-00872702.corp.ebay.com 
+2015/05/27 09:26:36 INFO  - jmeter.JMeter: Loaded icon properties from org/apache/jmeter/images/icon.properties 
+2015/05/27 09:26:38 INFO  - jmeter.engine.util.CompoundVariable: Note: Function class names must contain the string: '.functions.' 
+2015/05/27 09:26:38 INFO  - jmeter.engine.util.CompoundVariable: Note: Function class names must not contain the string: '.gui.' 
+2015/05/27 09:26:38 INFO  - jmeter.gui.action.LookAndFeelCommand: Using look and feel: com.apple.laf.AquaLookAndFeel [Mac OS X, System] 
+2015/05/27 09:26:39 INFO  - jmeter.engine.StandardJMeterEngine: Listeners will be started after enabling running version 
+2015/05/27 09:26:39 INFO  - jmeter.engine.StandardJMeterEngine: To revert to the earlier behaviour, define jmeterengine.startlistenerslater=false 
+2015/05/27 09:26:39 INFO  - jmeter.services.FileServer: Default base='/Users/sagandotra/git/hostmon' 
+2015/05/27 09:26:39 INFO  - com.pp.jmeter.plugin.GraphiteListener: >>>> Register for test state listener 
+2015/05/27 09:26:39 INFO  - jmeter.util.BSFTestElement: Registering JMeter version of JavaScript engine as work-round for BSF-22 
+2015/05/27 09:26:40 INFO  - jmeter.protocol.http.sampler.HTTPSamplerBase: Cannot find .className property for htmlParser, using default 
+2015/05/27 09:26:40 INFO  - jmeter.protocol.http.sampler.HTTPSamplerBase: Parser for text/html is  
+2015/05/27 09:26:40 INFO  - jmeter.protocol.http.sampler.HTTPSamplerBase: Parser for application/xhtml+xml is  
+2015/05/27 09:26:40 INFO  - jmeter.protocol.http.sampler.HTTPSamplerBase: Parser for application/xml is  
+2015/05/27 09:26:40 INFO  - jmeter.protocol.http.sampler.HTTPSamplerBase: Parser for text/xml is  
+2015/05/27 09:26:40 INFO  - jmeter.protocol.http.sampler.HTTPSamplerBase: Parser for text/vnd.wap.wml is org.apache.jmeter.protocol.http.parser.RegexpHTMLParser 
+2015/05/27 09:26:40 INFO  - jmeter.protocol.http.sampler.HTTPSamplerBase: Reuse SSL session context on subsequent iterations: true 
+2015/05/27 09:26:40 INFO  - jmeter.gui.util.MenuFactory: Skipping org.apache.jmeter.protocol.http.modifier.gui.ParamModifierGui 
+2015/05/27 09:26:40 INFO  - jmeter.samplers.SampleResult: Note: Sample TimeStamps are START times 
+2015/05/27 09:26:40 INFO  - jmeter.samplers.SampleResult: sampleresult.default.encoding is set to ISO-8859-1 
+2015/05/27 09:26:40 INFO  - jmeter.samplers.SampleResult: sampleresult.useNanoTime=true 
+2015/05/27 09:26:40 INFO  - jmeter.samplers.SampleResult: sampleresult.nanoThreadSleep=5000 
+2015/05/27 09:26:46 INFO  - jmeter.gui.action.Load: Loading file: /Users/sagandotra/git/lnptestscripts/test/home_paypal.jmx 
+2015/05/27 09:26:46 INFO  - jmeter.services.FileServer: Set new base='/Users/sagandotra/git/lnptestscripts/test' 
+2015/05/27 09:26:46 INFO  - jmeter.save.SaveService: Testplan (JMX) version: 2.2. Testlog (JTL) version: 2.2 
+2015/05/27 09:26:46 INFO  - jmeter.save.SaveService: Using SaveService properties file encoding UTF-8 
+2015/05/27 09:26:46 INFO  - jmeter.save.SaveService: Using SaveService properties file version 1427507 
+2015/05/27 09:26:46 INFO  - jmeter.save.SaveService: Using SaveService properties version 2.4 
+2015/05/27 09:26:46 INFO  - jmeter.save.SaveService: All converter versions present and correct 
+2015/05/27 09:26:47 INFO  - com.pp.jmeter.plugin.GraphiteListener: >>>> Register for test state listener 
+2015/05/27 09:26:47 INFO  - jmeter.services.FileServer: Set new base='/Users/sagandotra/git/lnptestscripts/test' 
+2015/05/27 09:26:50 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_average] 
+2015/05/27 09:26:50 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [95%] 
+2015/05/27 09:26:50 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_10_txns] 
+2015/05/27 09:26:50 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_average] 
+2015/05/27 09:26:50 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [95%] 
+2015/05/27 09:26:50 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_10_txns] 
+2015/05/27 09:27:36 INFO  - com.pp.jmeter.plugin.GraphiteListener: >>>> Register for test state listener 
+2015/05/27 09:27:36 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_average] 
+2015/05/27 09:27:36 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [95%] 
+2015/05/27 09:27:36 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_10_txns] 
+2015/05/27 09:32:07 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_average] 
+2015/05/27 09:32:07 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [95%] 
+2015/05/27 09:32:07 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_10_txns] 
+2015/05/27 09:32:13 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_average] 
+2015/05/27 09:32:13 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [95%] 
+2015/05/27 09:32:13 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_10_txns] 
+2015/05/27 09:32:19 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_average] 
+2015/05/27 09:32:19 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [95%] 
+2015/05/27 09:32:19 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_10_txns] 
+2015/05/27 09:32:21 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_average] 
+2015/05/27 09:32:21 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [95%] 
+2015/05/27 09:32:21 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_10_txns] 
+2015/05/27 09:35:06 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_average] 
+2015/05/27 09:35:06 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [95%] 
+2015/05/27 09:35:06 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_10_txns] 
+2015/05/27 09:35:19 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_average] 
+2015/05/27 09:35:19 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [95%] 
+2015/05/27 09:35:19 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_10_txns] 
+2015/05/27 09:35:19 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_average] 
+2015/05/27 09:35:19 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [95%] 
+2015/05/27 09:35:19 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_10_txns] 
+2015/05/27 09:35:21 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_average] 
+2015/05/27 09:35:21 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [95%] 
+2015/05/27 09:35:21 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_10_txns] 
+2015/05/27 09:35:21 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_average] 
+2015/05/27 09:35:21 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [95%] 
+2015/05/27 09:35:21 WARN  - jmeter.util.JMeterUtils: ERROR! Resource string not found: [last_10_txns] 

@@ -1,0 +1,235 @@
+extends layout
+
+block content
+
+    #header(class="navbar navbar-inverse navbar-fixed-top",role="navigation")
+        .container
+            .navbar-header
+                div(class="navbar-toogle collapsed",data-toggle="collapse", data-target=".navbar-collapse")
+                    span.sr-only Toggle Navigation
+                    span.icon-bar
+                    span.icon-bar
+                    span.icon-bar
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                a(class="navbar-brand pull-left",href="#") Performance Monitoring ToolKit
+                a(class="navbar-brand navtitle",href="#") Graphite Based Monitoring Tools &nbsp;&nbsp;|
+                a(class="navbar-brand navtitle",href="#div-healthmon") Other Monitoring Tools &nbsp;&nbsp;|
+                a(class="navbar-brand navtitle",href="#div-jmeter") Jmeter Test Execution &nbsp;&nbsp;|
+                a(class="navbar-brand navtitle",href="#div-kb") Knowledge Base &nbsp;&nbsp;|
+    #div-jumbo
+        .jumbotron
+            .container
+
+
+        div(class="alert alert-warning alert-dismissible alertMsg",role="alert",id="alert")
+            button(type="button",class="close",data-dismiss="alert")
+                span(aria-hidden="true") &times;
+                span(class="sr-only") Close
+            strong
+                | Invalid input!
+
+
+        div(class="panel panel-default")
+            div(class="panel-heading")
+                i(class="fa fa-line-chart") &nbsp;&nbsp;&nbsp;Monitoring Tools with Graphite Integration
+            div(class="panel-body")
+                #div-hostmon
+                    .container-fluid
+                        .row
+                            .col-xs-3.feature
+                                h4
+                                    i(class="fa fa-area-chart")&nbsp;
+                                    |System Resource Monitoring
+                                br
+                                div(class="bs-callout bs-callout-info")
+                                    p.small Enable System Level Monitoring (%CPU,Memory,IO etc.) on this host and store
+                                        |the collected data in our
+                                        |Graphite repository, check the samples
+                                        &nbsp;
+                                        a(href="http://stage2lp48.qa.paypal.com:8080/composer?stages=*stage2*",target="_blank") here
+                                    br
+                                    br
+                                .container-fluid(ng-controller="nmonctlr")
+                                    .row
+                                        .col-xs-4
+                                            .small
+                                                .strong Select Monitoring End date
+                                        .col-xs-8
+                                            div(class="input-append input-group",id="nmonSelector",data-date="09-02-2014",data-date-format="mm-dd-yyyy")
+                                                span(class="input-group-addon")
+                                                    i(class="fa fa-clock-o fa-1x")
+                                                input(class="span2",size="16",type="text",value="09-02-2014",ng-model="nmonSelectedDate")
+                                    .row
+                                        .col-xs-12
+                                            br
+                                    .row
+                                        .col-xs-4
+                                            .small
+                                                .strong Sampling Rate (seconds)
+                                        .col-xs-8
+                                                div(class="input-append input-group")
+                                                    input(type="text",class="form-control",placeholder="Sample Rate(seconds)",ng-model="nmonSamplingRate")
+                                    .row
+                                        .col-xs-4
+                                        .col-xs-8
+                                            br
+                                            button(type="button",class="btn btn-primary btn-sm",ng-click="activatenmon()",ng-disabled="{{running}}")
+                                                span(ng-hide="running")
+                                                | Start &nbsp;
+                                                i(ng-class="{'fa fa-play' : dormant,'fa fa-spinner fa-spin' : running}")
+                                            button(type="button",class="btn btn-danger btn-sm",ng-click="deactivatenmon()")
+                                                | Stop &nbsp;
+                                                i(ng-class="{'fa fa-stop' : stopdormant, 'fa fa-spinner fa-spin':stoprunning}")
+                                    .row
+                                        .col-xs-12
+                                            br
+
+                            .col-xs-1
+                                .seperator
+                            .col-xs-4.feature
+                                h4
+                                    i(class="fa fa-area-chart")&nbsp;
+                                    |JVM Monitoring using JMX
+                                br
+                                div(class="bs-callout bs-callout-info")
+                                    p.small Monitor JMX metrics from different JVM's (sparta,helix) and store the collected
+                                        | data in our graphite repository, check some samples
+                                        &nbsp;
+                                        a(href="http://stage2lp48.qa.paypal.com:8080/composer?stages=*stage2*",target="_blank") here
+                                br
+                                .container-fluid(ng-controller="jmonCtlr")
+                                    .row
+                                        .col-xs-2
+                                            i(class="fa fa-gears fa-2x")
+                                        .col-xs-10
+                                            input(type="hidden",id="select2Java")
+                                    .row
+                                        br
+                                        br
+                                    .row
+                                        br
+                                        br
+                                    .row
+                                        br
+                                        br
+                                    .row
+                                        .col-xs-4
+                                        .col-xs-8
+                                            br
+                                            button(type="button",class="btn btn-primary btn-sm",ng-click="jmonactivate()")
+                                                span
+                                                    | Start &nbsp;
+                                                    i(ng-class="{'fa fa-play' : dormant,'fa fa-spinner fa-spin' : running}")
+                                            button(type="button",class="btn btn-danger btn-sm",ng-click="jmondeactivate()")
+                                                | Stop &nbsp;
+                                                i(ng-class="{'fa fa-stop' : dormantstop, 'fa fa-spinner fa-spin':runningstop}")
+                                    .row
+                                        .col-xs-12
+                                            br
+
+                            .col-xs-1
+                                .seperator
+
+                            .col-xs-3.feature
+                                div(class=".panel .panel-default")
+                                    h4
+                                        i(class="fa fa-area-chart")&nbsp;
+                                        |NodeJS App Resource Monitoring
+                                    br
+                                    div(class="bs-callout bs-callout-info")
+                                        p.small Monitor your NodeJS app and collect statstics like RSS, %CPU Utilization etc. The
+                                            |data is collected and stored in the Graphite Repository.
+                                            &nbsp;
+                                            a(href="http://stage2lp48.qa.paypal.com:8080/composer?stages=*stage2*",target="_blank") here
+                                    br
+                                    .container-fluid(ng-controller="nodejsCtrl")
+                                        .row
+                                            .col-xs-2
+                                                i(class="fa fa-gears fa-2x")
+                                            .col-xs-10
+                                                input(type="hidden",id="select2Node",class="nodejinput")
+                                        .row
+                                            br
+                                            br
+                                        .row
+                                            br
+                                            br
+                                        .row
+                                            br
+                                            br
+                                        .row
+                                            .col-xs-4
+                                            .col-xs-8
+                                                button(type="button",class="btn btn-primary btn-sm",ng-click="nodeactivate()")
+                                                    span
+                                                        | Start &nbsp;
+                                                        i(ng-class="{'fa fa-play' : dormant,'fa fa-spinner fa-spin' : running}")
+                                                button(type="button",class="btn btn-danger btn-sm",ng-click="nodedeactivate()")
+                                                    | Stop &nbsp;
+                                                    i(ng-class="{'fa fa-stop' : dormantstop, 'fa fa-spinner fa-spin':runningstop}")
+                                        .row
+                                            .col-xs-12
+                                                br
+
+        div(class="panel panel-default")
+            div(class="panel-heading")
+                i(class="fa fa-tachometer fa-1x") &nbsp; &nbsp; &nbsp; General Monitoring Tools
+            div(class="panel-body")
+                #div-healthmon
+                    .container-fluid
+                        .row
+                            .col-xs-3.feature
+                                h4
+                                    i(class="fa fa-area-chart")&nbsp;
+                                    |Process ID (PID) Monitor
+                                br
+                                div(class="bs-callout bs-callout-info")
+                                    p.small Is your application crashing (& restarting)? Do you want to monitor
+                                        | for any unexpected application startups? Use the PID monitor to be notified
+                                        | if a process id changes.
+                                        button(id="pidchangehelp",type="button",class="btn btn-sm",data-toggle="popover"
+                                        ,data-content='<span class="small">ASF C++ services can recycle due reasons other than application crash, which are normal</span>',data-placement="right")
+                                            i(class="fa fa-question-circle")
+                                    br
+                                    .container-fluid
+                                        .row
+                                            br
+                                            br
+                                        .row
+                                            br
+                                            br
+                                        .row
+                                            br
+                                            br
+                                        .row
+                                            .col-xs-4
+                                            .col-xs-8
+                                                button(type="button",class="btn btn-default")
+                                                   a(class="fa fa-angle-double-right",href="/servicedetails",target="_blank") &nbsp; Launch!
+                                        .row
+                                            br
+
+                            .col-xs-1
+                                .seperator
+                            .col-xs-4.feature
+                                h4
+                                    i(class="fa fa-area-chart")&nbsp;
+                                    | Java Memory Monitor
+                                br
+                                div(class="bs-callout bs-callout-info")
+                                    p.small See the top Java processes consuming memory on this host
+                                        button(id="javamonhelp",type="button",class="btn btn-sm",data-toggle="popover"
+                                        ,data-content='<span class="small">Java processes for sparta and helix applications consume most of the physical memory on our stage2 machines, check who is the top consumer</span>',data-placement="right")
+                                            i(class="fa fa-question-circle")
+                                    br
+                                    button(type="button",class="btn btn-default")
+                                        .strong
+                                        i(class="fa fa-angle-double-right") &nbsp; Launch!
+                                    br
+                            .col-xs-1
+                                .seperator
+                            .col-xs-3.feature
+        hr
+        footer
+            p
+                |&copy; PayPal 2014

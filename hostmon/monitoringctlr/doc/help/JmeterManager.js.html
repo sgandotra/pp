@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: js/JmeterManager.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: js/JmeterManager.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * Created by sagandotra on 11/4/14.
+ */
+'use strict';
+
+var _           = require('underscore'),
+    spawn       = require('child_process').spawn,
+    exec        = require('child_process').exec,
+    log4js      = require('log4js'),
+    logger      = log4js.getLogger(),
+    fs          = require('fs'),
+    path        = require('path'),
+    Q           = require('q');
+
+
+/**
+ *
+ * @param config
+ * @constructor
+ */
+var JmeterManager = function(config,res) {
+    this.config                 = _.extend(JmeterManager.DEFAULTS,config);
+    this.res                     = res;
+    this.execCmd                = [];
+    this.isRunning               = false;
+    this.pid                     = "";
+    logger.info("Using Config : ",this.config);
+};
+
+JmeterManager.DEFAULTS  =  {
+    'installation' : path.join(__dirname,'../jmeter/bin/jmeter.sh'),
+    'bg-params_1' : '-n',
+    'bg-params_2' : '-l../logs/logfile.log',
+    'bg-params_3'  : '-j../logs/jmeter.log',
+    'ptable'       : {}
+};
+
+JmeterManager.getStatus = function (pid) {
+    return JmeterManager.DEFAULTS.ptable[pid];
+};
+
+JmeterManager.prototype.putStatus = function(pid,status) {
+    if(pid) {
+        JmeterManager.DEFAULTS.ptable[pid] = {
+            "status" : status,
+            "timestamp" : new Date()
+        }
+    }
+}
+
+JmeterManager.delete = function(pid) {
+    if(pid) {
+        if(JmeterManager.DEFAULTS.ptable[pid]) {
+            logger.info("Sending kill cmd to pid : "+pid);
+            var _run = exec("pkill -9 -P "+pid);
+            return "jmeter test run for execution id:  "+ pid + " stopped";
+        } else {
+            return "pid not found";
+        }
+    }
+}
+
+JmeterManager.prototype.start = function(cmd)  {
+    logger.info("received request to start JmeterManager test");
+    if(!cmd) {
+        throw new Error("Invalid JmeterManager request passed");
+    }
+
+    this.execCmd = [this.config['bg-params_1'],this.config['bg-params_2'],
+        this.config['bg-params_3'],"-t",cmd];
+
+};
+
+JmeterManager.prototype.run = function() {
+    var self = this;
+    this.remoteExec()
+        .then(function() {
+            self.res.json(200,{
+                "responseMsg" : "success",
+                "executionId" : self.pid
+            })
+            console.log("success");
+        },function(error) {
+            console.log(error);
+            self.res.json(500,{
+                "status"       : "ERROR",
+                "responseMsg" : error.message
+            })
+        });
+
+};
+
+JmeterManager.prototype.remoteExec = function() {
+    var self = this;
+    this.deferred = Q.defer();
+    logger.info("Executing JmeterManager test : "+this.config.installation + " " +this.execCmd);
+
+    try {
+        var _run = spawn(this.config.installation,this.execCmd);
+        console.log(">> PID : ", _run.pid);
+        this.pid = _run.pid;
+        _run.stdout.on('data',this.handleOutput());
+
+        _run.stderr.on('data',function(error) {
+            logger.error(">>> : "+error);
+            self.deferred.reject(new Error(error));
+        });
+
+        _run.on('exit',this.handleExit());
+    } catch(ex) {
+        console.log(ex);
+        console.log(ex.message);
+    }
+    return this.deferred.promise;
+};
+
+JmeterManager.prototype.handleOutput = function() {
+    var self = this;
+    return function(data) {
+        if(data.toString().match(/.*Starting the test.*/)) {
+            logger.info("Test started succesfully");
+            self.isRunning = true;
+            self.deferred.resolve();
+        }
+        if(!data.toString().match(/summary/)) {
+
+            var status = data.toString().split('\t');
+            if(status.length === 6) {
+            var response = {
+                    'samples' : status[0],
+                    'Threads' : status[1].split(':')[1].trim() || "",
+                    'Samples' : status[2].split(':')[1].trim() || "",
+                    'Latency' : status[3].split(':')[1].trim() || "",
+                    'RT'      : status[4].split(':')[1].trim() || "",
+                    'Errors' : status[5].split(':')[1].trim() || ""
+                };
+
+                self.putStatus(self.pid,response);
+            } else {
+                logger.info("Not updating status, bad line : ",data.toString());
+            }
+        }
+
+    }
+};
+
+JmeterManager.prototype.handleExit = function() {
+    var self = this;
+    return function(exitCode) {
+        logger.error("Exit code : " +exitCode);
+        if(!self.isRunning || exitCode !== 0) {
+            self.putStatus(self.pid,"Jmeter test execution failed with error code : " +exitCode);
+            self.deferred.reject(new Error("failed with error msg : " +exitCode));
+        } else {
+            self.isRunning = false;
+            self.putStatus(self.pid,"Test Completed successfully");
+        }
+    }
+}
+
+
+JmeterManager.prototype.validateLocation = function(loc) {
+    logger.info("validating JmeterManager location : ",loc);
+    if(!loc)
+        throw new Error("Invalid location : ",loc);
+    try {
+        fs.statSync(loc);
+    } catch (err) {
+        logger.error("No valid installation of JmeterManager found!");
+        throw new Error("JmeterManager not found at : ",loc);
+    }
+};
+
+module.exports = JmeterManager
+
+
+
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="JmeterManager.html">JmeterManager</a></li><li><a href="JmonCommands.html">JmonCommands</a></li><li><a href="ManageXmlTemplate.html">ManageXmlTemplate</a></li><li><a href="NmonCommands.html">NmonCommands</a></li><li><a href="NodeMonCommands.html">NodeMonCommands</a></li><li><a href="global.html#RemoteExec">RemoteExec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_">_</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#cpu">cpu</a></li><li><a href="global.html#deactivate">deactivate</a></li><li><a href="global.html#details">details</a></li><li><a href="global.html#emitLines">emitLines</a></li><li><a href="global.html#exec">exec</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#getList">getList</a></li><li><a href="global.html#https">https</a></li><li><a href="global.html#log4js">log4js</a></li><li><a href="global.html#memory">memory</a></li><li><a href="global.html#os">os</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#servicelist">servicelist</a></li><li><a href="global.html#status">status</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#util">util</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Nov 19 2014 14:50:36 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

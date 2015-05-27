@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: js/NodeMonCommands.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: js/NodeMonCommands.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * Created with JetBrains WebStorm.
+ * User: sagandotra
+ * Date: 5/18/14
+ * Time: 11:33 AM
+ * To change this template use File | Settings | File Templates.
+ */
+
+var os                      = require('os'),
+    _                       = require('underscore'),
+    path                    = require('path'),
+    fs                      = require('fs'),
+    util                    = require('util'),
+    Q                       = require('q'),
+    RemoteExec              = require('./RemoteExec');
+
+/**
+ *
+ * @param req
+ * @param res
+ * @constructor
+ */
+
+var NodeMonCommands = function(req,res) {
+    this.req            = req;
+    this.res            = res;
+    this.services       = null;
+    this.af             = "/opt/performance-automation-framework";
+    this.nodemonfolder  = path.join(this.af,"Tools/hostmon/nodemon");
+    this.response       = {
+        status : null,
+        timestamp : new Date(),
+        description : null
+    };
+    this.supportedCmds  = {
+        'doActivate'    : this.doActivate,
+        'doDeActivate'  : this.doDeActivate,
+        'doGetStatus'   : this.doGetStatus
+    }
+
+    try {
+
+        if(req.body.af) {
+            fs.statSync(req.body.af);
+            console.log("User defined af location found");
+            this.af            = req.body.af;
+            this.nodemonfolder = path.join(this.af,"Tools/hostmon/nodemon");
+            console.log("user defined nodemon folder : " + this.nodemonfolder);
+        }
+
+        if(!req.body.services || req.body.services.length == 0) {
+            throw new Error("No Service to process");
+        }
+        //get services to process
+        this.services          = req.body.services;
+        //add services to response
+        this.response.services = this.services;
+    }
+    catch(e) {
+        this.response.status      = "ERROR";
+        this.response.description = e;
+        this.res.json(500,this.response);
+    }
+};
+
+NodeMonCommands.prototype.sendSuccessInResponse = function(value) {
+
+
+    //handle last message
+    this.services[this.services.length-1].response = value.split('\n');
+
+    this.response.status   = "SUCCESS";
+    this.response.description = "";
+    console.log("res : " + util.inspect(this.response));
+    this.res.json(this.response);
+};
+
+NodeMonCommands.prototype.sendErrorInResponse   = function(error) {
+        this.response.status      = "ERROR";
+        this.response.description = error.toString();
+        this.res.json(500,this.response);
+};
+
+NodeMonCommands.prototype.doActivate = function(service,index) {
+
+    var self = this;
+    return function (response) {
+        console.log("inside activate execution  " + service.name + " nmon folder ; " + self.nodemonfolder);
+        var deferred     = Q.defer(),
+            nodemonScrpt = path.join(self.nodemonfolder,"nodemon.sh"),
+            exec         = [nodemonScrpt,"start","-s"],
+            remoteExec   = new RemoteExec(),
+            opts;
+
+        //handle message
+        if(index > 0)
+            self.services[index-1].response = response.split('\n');
+
+        if(!service.name) {
+            throw new Error("Service name is required, look at api documentation");
+        }
+
+        console.log("processing service: " +service.name);
+        exec.push(service.name);
+
+        opts = {
+            cwd : self.nodemonfolder  ,
+            maxBuffer : 1024*200,
+        };
+
+        remoteExec.setExecOpts(opts);
+        remoteExec.execCmd(exec.join(" "),deferred);
+
+        return deferred.promise;
+    }
+}
+
+NodeMonCommands.prototype.doDeActivate = function(service,index) {
+
+    var self = this;
+    return function (response) {
+        console.log("inside activate execution  " + service.name + " nmon folder ; " + self.nodemonfolder);
+        var deferred     = Q.defer(),
+            nodemonScrpt = path.join(self.nodemonfolder,"nodemon.sh"),
+            exec         = [nodemonScrpt,"stop","-s"],
+            remoteExec   = new RemoteExec(),
+            opts;
+
+        //handle message
+        if(index > 0)
+            self.services[index-1].response = response;
+
+        if(!service.name) {
+            throw new Error("Service name is required, look at api documentation");
+        }
+
+        console.log("processing service: " +service.name);
+        exec.push(service.name);
+
+        opts = {
+            cwd : self.nodemonfolder  ,
+            maxBuffer : 1024*200,
+        };
+
+        remoteExec.setExecOpts(opts);
+        remoteExec.execCmd(exec.join(" "),deferred);
+
+        return deferred.promise;
+    }
+}
+
+NodeMonCommands.prototype.doGetStatus = function(service,index) {
+
+    var self = this;
+    return function (response) {
+        console.log("inside activate execution  " + service.name + " nmon folder ; " + self.nodemonfolder);
+        var deferred     = Q.defer(),
+            nodemonScrpt = path.join(self.nodemonfolder,"nodemon.sh"),
+            exec         = [nodemonScrpt,"status","-s"],
+            remoteExec   = new RemoteExec(),
+            opts;
+
+        //handle message
+        if(index > 0)
+            self.services[index-1].response = response;
+
+        if(!service.name) {
+            throw new Error("Service name is required, look at api documentation");
+        }
+
+        console.log("processing service: " +service.name);
+        exec.push(service.name);
+
+        opts = {
+            cwd : self.nodemonfolder  ,
+            maxBuffer : 1024*200,
+        };
+
+        remoteExec.setExecOpts(opts);
+        remoteExec.execCmd(exec.join(" "),deferred);
+
+        return deferred.promise;
+    }
+}
+
+
+
+NodeMonCommands.prototype.process = function(cmd) {
+
+    var funcs    = [],
+        deferred = Q(),
+        self     = this;
+
+    _.each(this.services,function(service,index,services) {
+        var func    = this.supportedCmds[cmd];
+
+        if(!func) {
+            throw new Error("Unsupported action : " + cmd);
+        }
+        funcs.push(func.apply(this,[service,index]));
+    },this);
+
+    console.log("Total deferred actions added :" + funcs.length);
+
+    funcs.forEach(function (f) {
+        deferred = deferred.then(f);
+    });
+
+    console.log("deferred actions created");
+
+
+    deferred.then(function(value)  {
+        self.sendSuccessInResponse.apply(self,[value]);
+    }, function(error) {
+        self.sendErrorInResponse.apply(self,[error]);
+    });
+
+};
+
+module.exports = NodeMonCommands
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="JmeterManager.html">JmeterManager</a></li><li><a href="JmonCommands.html">JmonCommands</a></li><li><a href="ManageXmlTemplate.html">ManageXmlTemplate</a></li><li><a href="NmonCommands.html">NmonCommands</a></li><li><a href="NodeMonCommands.html">NodeMonCommands</a></li><li><a href="global.html#RemoteExec">RemoteExec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_">_</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#cpu">cpu</a></li><li><a href="global.html#deactivate">deactivate</a></li><li><a href="global.html#details">details</a></li><li><a href="global.html#emitLines">emitLines</a></li><li><a href="global.html#exec">exec</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#getList">getList</a></li><li><a href="global.html#https">https</a></li><li><a href="global.html#log4js">log4js</a></li><li><a href="global.html#memory">memory</a></li><li><a href="global.html#os">os</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#servicelist">servicelist</a></li><li><a href="global.html#status">status</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#util">util</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Nov 19 2014 14:50:36 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

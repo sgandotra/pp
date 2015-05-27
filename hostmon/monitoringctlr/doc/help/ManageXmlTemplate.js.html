@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: js/ManageXmlTemplate.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: js/ManageXmlTemplate.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>
+'use strict'
+
+var xmljs   = require('libxmljs'),
+    fs      = require('fs'),
+    path    = require('path'),
+    _       = require('underscore'),
+    os      = require('os'),
+    util    = require('util');
+
+/**
+ * @param templateLocation - location of the template file which would be used for creating the actual Jmon input
+ * @param type  - Sparta or Helix
+ * @constructor
+ */
+var ManageXmlTemplate = function(templateLocation) {
+    if(!fs.existsSync(templateLocation)) {
+        new TypeError("Invalid template location");
+    }
+    this.templateLocation               = templateLocation;
+    this.template                       = path.join(templateLocation,"template.xml");
+    this.templatedoc                    = null;
+    this.hostname                       = "localhost";//os.hostname().toUpperCase();
+    this.init();
+}
+
+/**
+ * Defaults.supportedJmonTemplates - current supported type
+ * @type {{supportedJMonTemplates: Array}}
+ */
+
+ManageXmlTemplate.DEFAULTS = {
+    conf : {
+        AppPort                : "1999",
+        Username               : "system",
+        Password               : "manager",
+        ConnectTimeout         : "3000",
+        MetricsPingInterval    : "5000",
+        MetricsEndPointType    : "Graphite",
+        MetricsCollectorAddress: "stage2lp48.qa.paypal.com:2003"
+    },
+    jmxconf :  {
+        geronimo        : "service:jmx:rmi:///jndi/rmi://STAGE_PORT/JMXConnector",
+        jboss           : "service:jmx:remoting-jmx://"
+    },
+    JMXServiceUrl       : "JMXServiceURL"
+}
+
+
+/**
+ *
+ * initialization - this is where we are loading the XML template file based on
+ * location and file type provided
+ *
+ */
+ManageXmlTemplate.prototype.init = function() {
+
+    try {
+        //read xml cp file
+        this.templatedoc = xmljs.parseXmlString(fs.readFileSync(this.template));
+    }
+    catch(e) {
+        throw new Error("Error in reading file : " +e);
+    }
+}
+
+/**
+ * List of services which need to be appended of the specific type
+ *
+ * &lt;pre>
+ *     &lt;code>
+ *          &lt;JMXAgentConfig&gt;
+ * &lt;AppName&gt;helixtestapiserv&lt;/AppName&gt;
+ * &lt;AppPort&gt;1999&lt;/AppPort&gt;
+ * &lt;!-- use this format for Jboss based application --&gt;
+ * &lt;JMXServiceURL&gt;service:jmx:remoting-jmx://@STAGE:10364&lt;/JMXServiceURL&gt;
+
+ * &lt;!-- use this format for Geronimo based applications --&gt;
+ * &lt;!-- &lt;JMXServiceURL&gt;service:jmx:rmi:///jndi/rmi://@STAGE:10781/JMXConnector&lt;/JMXServiceURL&gt; --&gt;
+
+ * &lt;Username&gt;system&lt;/Username&gt;
+ * &lt;Password&gt;manager&lt;/Password&gt;
+ * &lt;ConnectTimeout&gt;3000&lt;/ConnectTimeout&gt;
+ * &lt;MetricsPingInterval&gt;5000&lt;/MetricsPingInterval&gt;
+ * &lt;MetricsEndPointType&gt;Graphite&lt;/MetricsEndPointType&gt;
+ * &lt;!--&lt;MetricsOutputFileName&gt;/x/opt/performance-automation-framework/Tools/jmonitor/output/helixrestapi-metrics.txt&lt;/MetricsOutputFileName&gt;--&gt;
+ * &lt;MetricsCollectorAddress&gt;stage2lp48.qa.paypal.com:2003&lt;/MetricsCollectorAddress&gt;
+ * &lt;/JMXAgentConfig&gt;
+ *
+ *     &lt;/code>
+ * &lt;/pre>
+ *
+ *
+ * @param {object} services
+ */
+
+ManageXmlTemplate.prototype.genTemplate = function(services) {
+    try {
+
+     //filter out jboss
+
+        if(services != null && services.length > 0) {
+            console.log("Calling append");
+            this.append(this.templatedoc,services);
+
+            console.log("fragment : " +this.templatedoc.toString() + "\n");
+            this.writeToDisk(this.templatedoc.toString());
+        }
+    } catch(e) {
+        throw new Error(e);
+    }
+
+}
+
+ManageXmlTemplate.prototype.append = function(parentDoc,services) {
+    var self            = this,
+        parentElement   = parentDoc.get('//JMXAgentConfigs');
+
+    _.each(services,function(service,key) {
+        console.log("Adding port number : " +service.name);
+
+        var root = new xmljs.Document().node('JMXAgentConfig');
+        //add default properties
+        _.each(ManageXmlTemplate.DEFAULTS.conf,function(value,name) {
+            root.node(name,value);
+        });
+        //add appname
+        root.node("AppName",service.name);
+
+        if(service.type === 'HELIX_JBOSS_7' || service.type === 'SPARTA_JBOSS_7') {
+            root.node(ManageXmlTemplate.DEFAULTS.JMXServiceUrl,
+                ManageXmlTemplate.DEFAULTS.jmxconf.jboss + self.hostname + ":"+service.port);
+        } else if (service.type === 'SPARTA_GERONIMO' || service.type === 'HELIX_GERONIMO') {
+            root.node(ManageXmlTemplate.DEFAULTS.JMXServiceUrl,self.getSpartaGeronimoUrl(service.port));
+        } else {
+            throw new TypeError("Unknown type : " + service.type);
+        }
+        parentElement.addChild(root);
+    });
+}
+
+/**
+ *
+ *
+ * @param port
+ * @returns {string}
+ */
+
+ManageXmlTemplate.prototype.getSpartaGeronimoUrl = function(port) {
+    return ManageXmlTemplate.DEFAULTS.jmxconf.geronimo.replace(/STAGE_PORT/,this.hostname + ":" + port);
+}
+
+/**
+ *
+ * @param port
+ * @returns {string}
+ */
+
+ManageXmlTemplate.prototype.getHelixGeronimoUrl = function(port) {
+    return ManageXmlTemplate.DEFAULTS.jmxconf.geronimo.replace(/STAGE_PORT/,this.hostname + ":" + port);
+}
+
+
+/**
+ *
+ * creates a file from the updated template
+ *
+ */
+ManageXmlTemplate.prototype.writeToDisk = function(payload) {
+    var fileName = path.join(this.templateLocation,"JMX.xml");
+    console.log(">>>> Writing to file " +fileName);
+
+    fs.writeFileSync(fileName,payload);
+}
+
+
+
+module.exports = ManageXmlTemplate
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="JmeterManager.html">JmeterManager</a></li><li><a href="JmonCommands.html">JmonCommands</a></li><li><a href="ManageXmlTemplate.html">ManageXmlTemplate</a></li><li><a href="NmonCommands.html">NmonCommands</a></li><li><a href="NodeMonCommands.html">NodeMonCommands</a></li><li><a href="global.html#RemoteExec">RemoteExec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_">_</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#cpu">cpu</a></li><li><a href="global.html#deactivate">deactivate</a></li><li><a href="global.html#details">details</a></li><li><a href="global.html#emitLines">emitLines</a></li><li><a href="global.html#exec">exec</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#getList">getList</a></li><li><a href="global.html#https">https</a></li><li><a href="global.html#log4js">log4js</a></li><li><a href="global.html#memory">memory</a></li><li><a href="global.html#os">os</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#servicelist">servicelist</a></li><li><a href="global.html#status">status</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#util">util</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Nov 19 2014 14:50:36 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: js/JmonCommands.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: js/JmonCommands.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * Created with JetBrains WebStorm.
+ * User: sagandotra
+ * Date: 5/19/14
+ * Time: 2:53 PM
+ * To change this template use File | Settings | File Templates.
+ */
+
+var os                      = require('os'),
+    _                       = require('underscore'),
+    path                    = require('path'),
+    fs                      = require('fs'),
+    util                    = require('util'),
+    RemoteExec              = require('./RemoteExec'),
+    ManageXmlTemplate       = require('./ManageXmlTemplate'),
+    Q                       = require('q'),
+    StageHelper             = require('./StageHelper');
+
+
+/**
+ *
+ * @constructor
+ */
+var JmonCommands = function(req,res) {
+    this.req            = req;
+    this.res            = res;
+    this.services       = null;
+    this.af             = "/opt/performance-automation-framework";
+
+    this.jmonfolder     = path.join(this.af,"Tools/hostmon/jmonitor");
+    this.restartScript  = path.join(this.jmonfolder,"restart.sh");
+    this.response       = {
+        status : null,
+        timestamp : new Date(),
+        description : null
+    };
+
+    try {
+
+        if(req.body.af) {
+            fs.statSync(req.body.af);
+            console.log("User defined af location found");
+            this.af            = req.body.af;
+            this.jmonfolder = path.join(this.af,"Tools/hostmon/jmonitor");
+            console.log("user defined jmon folder : " + this.jmonfolder);
+        }
+
+        console.log(util.inspect(req._parsedUrl.path));
+        var urlPath = req._parsedUrl.path;
+        if(!urlPath.match(/status/) && (!req.body.services || req.body.services.length == 0)) {
+            throw new Error("No Service to process");
+        }
+        //get services to process
+        this.services          = req.body.services;
+
+        //add services to response
+        this.response.services = this.services;
+    }
+    catch(e) {
+        this.response.status      = "ERROR";
+        this.response.description = e;
+        this.res.json(500,this.response);
+    }
+
+}
+
+JmonCommands.DEFAULTS = {
+    restartScriptLoc : "/x/tools/common/mystart",
+    supportedJavaServices : ["HELIX_JBOSS_7","SPARTA_JBOSS_7","SPARTA_GERONIMO","HELIX_GERONIMO"],
+    SPARTA_JBOSS_GERONIMO : {
+        _cmd     : ["cdbdump","&lt;" ,"cdbs/application/application.cdb","|","grep","RmiRegistryPort"],
+        getPort  : function(service,deferred) {
+            var cmd = this._cmd.join(" ");
+            StageHelper.execCmd(service.serviceDeploymentFolder,cmd,deferred);
+        }
+    },
+    HELIX_JBOSS : {
+        _cmd     : ["cdbdump","&lt;" ,"__PLACEHOLDER__","|","grep","rmi_naming_port"],
+        getPort  : function(service,deferred) {
+
+            this._cmd[2] = "config/"+service.name+".cdb";
+
+            var cmd = this._cmd.join(" ");
+            StageHelper.execCmd(service.serviceDeploymentFolder,cmd,deferred);
+        }
+    }
+}
+
+
+JmonCommands.prototype.enableJMon = function(services) {
+    var self = this;
+    return function() {
+        if(services.length > 0) {
+            var deferred         = Q.defer(),
+                folderLocation   = path.join(self.af,"Tools/hostmon/jmonitor"),
+                exec             = path.join(folderLocation,"jmonitor.sh"),
+                templateLocation = path.join(folderLocation,"conf"),
+                templateFile     = path.join(templateLocation,"JMX.xml"),
+                manageXml        = new ManageXmlTemplate(templateLocation),
+                cmd              = [exec,"start","-t",templateFile],
+                remoteExec       = new RemoteExec();
+
+            console.log("calling generate Template");
+            manageXml.genTemplate(services);
+            console.log("starting jmon with cmd : " +cmd.join(" "));
+
+            StageHelper.spawnCmd(folderLocation,cmd.join(" "),deferred);
+            return deferred.promise;
+        }
+    }
+
+}
+
+
+JmonCommands.prototype.testIsRunning = function(service) {
+    return function() {
+        var deferred = Q.defer();
+        StageHelper.isServiceRunning(service.name,"java",deferred);
+        return deferred.promise;
+
+    }
+}
+
+
+JmonCommands.prototype.getPortNumber = function(service) {
+    return function(data) {
+        var port        =  data.split('->')[1],
+            newLineIndx = port.indexOf('\n');
+
+        if(newLineIndx != -1 ) {
+            port  = port.substring(0,newLineIndx);
+        }
+
+
+        service.port = port;
+    }
+}
+
+JmonCommands.prototype.getCdbDump = function(service) {
+    return function(text) {
+        service.state = service.state || "started";
+
+        var deferred       = Q.defer();
+        console.log("Get Port for service : " +util.inspect(service));
+        if(service.type === "SPARTA_GERONIMO" || service.type === "SPARTA_JBOSS_7") {
+            JmonCommands.DEFAULTS.SPARTA_JBOSS_GERONIMO.getPort(service,deferred);
+        } else if(service.type === "HELIX_JBOSS_7" || service.type === 'HELIX_GERONIMO')  {
+            JmonCommands.DEFAULTS.HELIX_JBOSS.getPort(service,deferred);
+
+        } else {
+            throw new TypeError("Type not registered, please contact developer");
+        }
+
+        return deferred.promise;
+    };
+}
+
+JmonCommands.prototype.checkServiceType = function(service) {
+    var deployFolder;
+    try {
+        deployFolder = StageHelper.getDeploymentFolder();
+
+        console.log("[checkServiceType] deploy folder : " +deployFolder + " service name : " +service.name + "\n");
+        var serviceDeploymentFolder = path.join(deployFolder,service.name);
+
+        if(fs.existsSync(path.join(serviceDeploymentFolder,"standalone"))
+            && fs.existsSync(path.join(serviceDeploymentFolder,"helix-lib.sh"))) {
+            console.log(service.name + " is a jboss7 helix service\n" );
+            service.type = "HELIX_JBOSS_7";
+            service.serviceDeploymentFolder =  serviceDeploymentFolder;
+        }
+        else if(fs.existsSync(path.join(serviceDeploymentFolder,"jboss-config")))  {
+            console.log(service.name + " is a sparta jboss 7 service\n" );
+            service.type = "SPARTA_JBOSS_7";
+            service.serviceDeploymentFolder =  serviceDeploymentFolder;
+        }
+        else if(fs.existsSync(path.join(serviceDeploymentFolder,"spartaserv"))) {
+            console.log(service.name + " is a sparta geronimo service\n" );
+            service.type = "SPARTA_GERONIMO";
+            service.serviceDeploymentFolder =  serviceDeploymentFolder;
+        }
+        else if(fs.existsSync(path.join(serviceDeploymentFolder,"helix-lib.sh"))) {
+            console.log(service.name + " is a helix geronimo service\n" );
+            service.type = "HELIX_GERONIMO";
+            service.serviceDeploymentFolder =  serviceDeploymentFolder;
+        }
+        else {
+            service.type = "UNDEFINED";
+        }
+    }
+    catch(e) {
+       this.sendErrorInResponse(e);
+    }
+}
+
+/**
+ *
+ * @param serviceDeploymentFolder
+ * @param deferred
+ * @returns {*|Function}
+ */
+JmonCommands.prototype.restartService = function(service) {
+    var self = this;
+    return function(text) {
+        console.log("testIfRunning output : ["+text.trim()+"]");
+
+        var procCount = Number(text.trim()),
+            deferred  = Q.defer(),
+            serviceDeploymentFolder = service.serviceDeploymentFolder;
+
+            if(service.type !== "UNDEFINED") {
+                if(procCount == 0) {
+                    if(serviceDeploymentFolder && fs.existsSync(serviceDeploymentFolder)) {
+                        var remoteExec = new RemoteExec(),
+                            cmd  = [self.restartScript,serviceDeploymentFolder],
+                            opts =  {
+                                cwd : serviceDeploymentFolder  ,
+                                maxBuffer : 1024*200,
+                            },
+                            serviceName = serviceDeploymentFolder.substring(serviceDeploymentFolder.lastIndexOf('/'));
+
+                        remoteExec.setExecOpts(opts);
+
+                        console.log("Restarting service : " + serviceName + " with cmd " + cmd.join(" "));
+                        remoteExec._spawnCmd(cmd,deferred,false);
+                        //remoteExec.execCmd(cmd.join(" "),deferred);
+                        return deferred.promise;
+                    };
+                    throw new Error("Folder : " +serviceDeploymentFolder + " does not exist!");
+                }
+                else {
+                    console.log("Process already running");
+                    service.state = "isrunning";
+                }
+            }
+        }
+}
+
+/**
+ * Get Deployment Folder
+ */
+
+JmonCommands.prototype.getDeploymentFolder = function() {
+    hostname = os.hostname().toUpperCase();
+    deployFolder = path.join("/x/web",hostname);
+    if(fs.existsSync(deployFolder)) {
+        util.print("Deploy Folder :"+ deployFolder + "\n");
+        return deployFolder;
+    }
+    throw new Error("Deployment folder : " + deployFolder + " does not exist");
+}
+
+/**
+ *
+ * @param servicename
+ * @returns {*}
+ */
+
+JmonCommands.prototype.verifyService  =  function(servicename) {
+    var absServicePath,
+        deployFolder        = JmonCommands.getDeploymentFolder();
+
+    console.log("Received a request to verify : " +servicename);
+    if(servicename && servicename.length > 0) {
+        if(!deployFolder) {
+            this.getDeploymentFolder();
+        }
+        absServicePath  = path.join(deployFolder,servicename);
+        if(fs.existsSync(absServicePath)) {
+            util.print("Service found at :" + absServicePath + "\n");
+            return absServicePath;
+        }
+    }
+    console.log("Service name at location : " +absServicePath + " does not exist");
+    throw new Error("Service name at location : " +absServicePath + " does not exist");
+}
+
+/**
+ *
+ * @param value
+ */
+
+JmonCommands.prototype.sendSuccessInResponse = function(value) {
+    this.response.status   = "SUCCESS";
+    this.response.description = value.replace(/\\/g, '').split('\n');
+    console.log("res : " + util.inspect(this.response));
+    this.res.json(this.response);
+};
+
+/**
+ *
+ * @param error
+ */
+
+JmonCommands.prototype.sendErrorInResponse   = function(error) {
+    this.response.status      = "ERROR";
+    this.response.description = error.toString();
+    this.res.json(500,this.response);
+};
+
+
+JmonCommands.prototype.doActivate =  function() {
+    var deferred       = Q(),
+        funcs    = [],
+        self     = this;
+
+
+    console.log("Received  request for [" + this.services.length + "] services to be configured with jmonitor" );
+
+    _.each(this.services,function(service,index) {
+        try {
+            StageHelper.verifyService(service.name);
+            if(!service.type || !_.contains(this.supportedJavaServices,service.type)) {
+                funcs.push(self.checkServiceType(service));
+            }
+            console.log("registering testisrunning");
+            funcs.push(self.testIsRunning(service));
+            console.log('registering restart service');
+            funcs.push(self.restartService.apply(self,[service]));
+            console.log('registering cdbdump');
+            funcs.push(self.getCdbDump(service))
+            console.log('registering port nubmer');
+            funcs.push(self.getPortNumber(service))
+        }
+        catch(e) {
+            console.log("Service : " +service.name + " not found, failed with error : " + e);
+            service.type = "UNDEFINED";
+        }
+
+    });
+    console.log("registering enableJMon");
+    funcs.push(this.enableJMon(_.filter(this.services,function(service) {
+        return !(service.type === "UNDEFINED");
+    })));
+    funcs.push(function(text) {
+        console.log(">>> " +text);
+        if(text.match(/.*Started JMonitor Processes.*/)) {
+            return self.sendSuccessInResponse(text)
+        }
+            return self.sendErrorInResponse(text);
+    });
+
+    funcs.forEach(function (f) {
+        deferred = deferred.then(f);
+    });
+    deferred.then(function(value)  {
+        self.sendSuccessInResponse(self.services);
+    }, function(error) {
+        console.log("Error > >: "+error.stack);
+        self.sendErrorInResponse(error);
+    });
+}
+
+/**
+ * deactivate
+ */
+
+JmonCommands.prototype.deactivate = function() {
+    var self            = this,
+        deactivate      = function() {
+        var deferred         = Q.defer(),
+            exec             = path.join(self.jmonfolder,"jmonitor.sh"),
+            cmd              = [exec,"stop"],
+            remoteExec = new RemoteExec(),
+            opts = {
+                cwd : self.jmonfolder ,
+                maxBuffer : 1024*200,
+            };
+        remoteExec.setExecOpts(opts);
+        remoteExec.execCmd(cmd.join(" "),deferred);
+        return deferred.promise;
+    };
+
+    deactivate()
+        .then(function(value)  {
+        self.sendSuccessInResponse.apply(self,[value]);
+    }, function(error) {
+        self.sendErrorInResponse.apply(self,[error]);
+    });
+}
+
+/**
+ * get Status
+ */
+
+JmonCommands.prototype.getStatus = function() {
+
+    try {
+        var lckFile          = path.join(this.jmonfolder,"jmonitor.log.lck"),
+            stat             = fs.statSync(lckFile);
+        console.log("Finding Status");
+        if(stat) {
+            this.sendSuccessInResponse("Jmonitor is already running!");
+        }
+
+    } catch(e) {
+        if(e.code === 'ENOENT') {
+            console.log("File : " + lckFile + " not found ");
+            this.sendSuccessInResponse("Jmonitor is not running");
+        } else {
+            console.log("Error : " + util.inspect(e));
+            this.sendErrorInResponse(e);
+        }
+    }
+
+}
+
+
+module.exports = JmonCommands
+
+
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="JmeterManager.html">JmeterManager</a></li><li><a href="JmonCommands.html">JmonCommands</a></li><li><a href="ManageXmlTemplate.html">ManageXmlTemplate</a></li><li><a href="NmonCommands.html">NmonCommands</a></li><li><a href="NodeMonCommands.html">NodeMonCommands</a></li><li><a href="global.html#RemoteExec">RemoteExec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_">_</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#cpu">cpu</a></li><li><a href="global.html#deactivate">deactivate</a></li><li><a href="global.html#details">details</a></li><li><a href="global.html#emitLines">emitLines</a></li><li><a href="global.html#exec">exec</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#getList">getList</a></li><li><a href="global.html#https">https</a></li><li><a href="global.html#log4js">log4js</a></li><li><a href="global.html#memory">memory</a></li><li><a href="global.html#os">os</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#servicelist">servicelist</a></li><li><a href="global.html#status">status</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#util">util</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Nov 19 2014 14:50:36 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

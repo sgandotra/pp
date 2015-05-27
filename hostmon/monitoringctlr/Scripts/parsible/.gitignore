@@ -1,0 +1,6 @@
+plugins/*.pyc
+plugins/extensions/*.pyc
+plugins/parsers/*.pyc
+plugins/processors/*.pyc
+plugins/outputs/*.pyc
+plugins/extensions/*.pyc

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: routes/git.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: routes/git.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * Created by sagandotra on 11/3/14.
+ */
+
+'use strict';
+
+var https = require('https'),
+    path  = require('path'),
+    RemoteExec = require('../js/RemoteExec'),
+    Q           = require('q'),
+    fs          = require('fs'),
+    _           = require('underscore'),
+    log4js     = require('log4js'),
+    logger     = log4js.getLogger();
+
+
+/**
+ * Test if a Git URL is valid before cloning
+ *
+ *
+ * @param request
+ * @param response
+ */
+exports.details = function(request,response) {
+
+    var accessToken = request.param('access_token'),
+        username   = request.params.username,
+        reponame    = request.params.reponame,
+        url         = 'https://github.paypal.com/api/v3/repos/' +username+'/'+reponame+'?access_token='+accessToken;
+
+    logger.info("Validating github url : ",url);
+
+    https.get(url,function(resp) {
+        logger.info("Status code : ",resp.statusCode);
+        logger.info("headers : ",resp.headers);
+
+        resp.on('data',function(d) {
+           response.json(JSON.parse(d));
+        });
+    }).on('error',function(e) {
+           response.json(500, e.message);
+        });
+};
+
+/**
+ * Get a list of all folder with *.jmx files in the repo folder
+ *
+ *
+ * @param request
+ * @param response
+ */
+
+exports.getList = function(request,response) {
+    var jmeterpath = path.join(__dirname,'..','repo'),
+        responseMsg = {
+            'error' : '',
+            'status': 'SUCCESS',
+            'response': {},
+            'timestamp' : new Date(),
+            'dirCount' : 0
+        },
+        handleError = function(msg,res) {
+            responseMsg = {
+                'error' : msg,
+                'status': 'ERROR',
+                'timestamp' : new Date(),
+                'dirCount' : 0
+            };
+            res.json(500,responseMsg);
+        },
+        handleSuccess = function() {
+            responseMsg.dirCount = _.keys(responseMsg.response).length;
+            response.json(200,responseMsg);
+        },
+        getAllJmx = function(parentDir) {
+            logger.info("Search parent dir : ",parentDir);
+            var files = fs.readdirSync(parentDir);
+            logger.info("Iterating through files " ,files);
+            _.each(files,function(file) {
+                var stats = fs.statSync(path.join(parentDir,file));
+                if(file !== '.git') {
+                    if(stats.isDirectory()) {
+                        var dir = path.join(parentDir,file);
+                        getAllJmx(dir);
+                    } else {
+                        var currentPath = path.join(parentDir,file);
+                        if(file.match(/^.*.jmx$/)) {
+                            logger.info("adding jmx file : " + currentPath);
+                            if(!responseMsg.response[parentDir]) {
+                                responseMsg.response[parentDir] = [currentPath];
+                            } else {
+                                responseMsg.response[parentDir].push(currentPath);
+                            }
+                        }
+                    }
+                }
+
+            });
+        };
+
+    getAllJmx(jmeterpath);
+    handleSuccess();
+
+    /*fs.readdir(jmeterpath,function(err,files) {
+       if(err) {
+           handleError(err.message,response);
+           return;
+       } else {
+           logger.info("files found : ",files);
+           responseMsg.dirCount = files.length;
+           _.each(files,function(file) {
+              var stats = fs.statSync(path.join(jmeterpath,file));
+               if(stats.isDirectory()) {
+                   var currentPath = path.join(jmeterpath,file),
+                       jmxfileList = {'dir' : file,'jmx': [] },
+                       _files      = fs.readdirSync(currentPath);
+                   _.each(_files,function(_file) {
+                    if(_file.match(/^.*.jmx$/)) {
+                        logger.info("adding jmx file : " +_file + " to directory : " +file);
+                        jmxfileList.jmx.push(_file);
+                    }
+                   });
+                   logger.info("file list : " ,jmxfileList);
+                   responseMsg.response.push(jmxfileList);
+               }
+           });
+       }
+       handleSuccess(response);
+    });*/
+
+};
+
+/**
+ *
+ * Clone using a valid repo
+ *
+ * @param request
+ * @param response
+ */
+
+exports.clone = function(request,response) {
+    var cloneUrl        = request.param('cloneurl'),
+        execDir         = path.join(__dirname,'..','repo');
+
+
+    logger.info("clone url: " ,cloneUrl);
+    if(!cloneUrl || !cloneUrl.match(/^.*.git$/)) {
+        if(!cloneUrl)
+            cloneUrl = '';
+        response.json(500, {
+            'error' : 'Invalid clone url : '+cloneUrl
+        });
+        return;
+    }
+
+    var pathArgs        = cloneUrl.split('/'),
+        cloneFolder     = pathArgs[pathArgs.length-1].split('.')[0],
+        cloneFolderAbs  = path.join(execDir,cloneFolder),
+        remoteExec      = new RemoteExec(),
+        gitCmd          = ['git','clone','-q',cloneUrl],
+        rmCmd           = ['rm','-rf',cloneFolder],
+        finalCmd        = [rmCmd.join(' ')," ;",gitCmd.join(" ")],
+        deferred        = Q.defer();
+
+    remoteExec.setExecOpts({
+        'cwd' : execDir
+    });
+
+    logger.info('received request to clone : ',cloneUrl);
+    logger.info("Directory name : ",execDir);
+
+    remoteExec.execCmd(finalCmd.join(" "),deferred)
+        .then(function(resp) {
+            logger.info("response : ",resp);
+            response.json(200,{
+                'response' : "success"
+            });
+        },function(error) {
+           logger.info("response : ",error);
+            response.json(500,error.message);
+        });
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="JmeterManager.html">JmeterManager</a></li><li><a href="JmonCommands.html">JmonCommands</a></li><li><a href="ManageXmlTemplate.html">ManageXmlTemplate</a></li><li><a href="NmonCommands.html">NmonCommands</a></li><li><a href="NodeMonCommands.html">NodeMonCommands</a></li><li><a href="global.html#RemoteExec">RemoteExec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_">_</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#cpu">cpu</a></li><li><a href="global.html#deactivate">deactivate</a></li><li><a href="global.html#details">details</a></li><li><a href="global.html#emitLines">emitLines</a></li><li><a href="global.html#exec">exec</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#getList">getList</a></li><li><a href="global.html#https">https</a></li><li><a href="global.html#log4js">log4js</a></li><li><a href="global.html#memory">memory</a></li><li><a href="global.html#os">os</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#servicelist">servicelist</a></li><li><a href="global.html#status">status</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#util">util</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Nov 19 2014 14:50:36 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

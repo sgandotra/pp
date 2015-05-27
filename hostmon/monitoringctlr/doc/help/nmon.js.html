@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: routes/nmon.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: routes/nmon.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>'use strict'
+
+/**
+ * import child process module
+ * @type {exec}
+ */
+
+var RemoteExec      = require('../js/RemoteExec'),
+    _               = require('underscore'),
+    os              = require('os'),
+    NmonCommands    = require('../js/NmonCommands');
+
+/**
+ *
+ *  @11/19 - sagandotra
+ *
+ *   SUPPORTED METHOD - GET
+ *   updating the interface, now there is no need to specify the location of
+ *   the installation, also the fact that we are going to replace nmon with
+ *   vmstat for publishing the data, the status command has to look for a different process
+ *   name. We will also be asking for the frequency of the update
+ *
+ *  --
+ * &lt;strike>
+ * &lt;ul> Handles &lt;strong>/nmon/status&lt;/strong> requests
+ *
+ * We are handling the status requests in two ways
+ * &lt;li>
+ *     &lt;ul> if it's a HTTP GET request the automation framework location on the host machine is assumed to be
+ *      &lt;strong>"location": "/opt/performance-automation"&lt;/strong>&lt;/ul>
+ *     &lt;ul> if it's a HTTP POST Request the location is picked up from req.body.af.location property.
+ *      &lt;span style="color:red">&lt;strong> an incorrect location would throw an error&lt;/strong>&lt;/span>&lt;/ul>
+ * &lt;/li>
+ *
+ *
+ *
+ * @param {object} req - request object
+ * @param {object} res - response object
+ *
+ * @param {object} req.body -
+ *                           &lt;pre>&lt;code>
+ *                           {
+ *                              "af":
+ *                                  {
+ *                                      "location": "/opt/performance-automation-framework"
+ *                                  }
+ *                            }
+ *                            &lt;/code>&lt;/pre>
+ *  &lt;/ul>
+ *
+ *  &lt;/strike>
+ */
+exports.status = function(req,res) {
+    var nmonCommands = new NmonCommands(req,res);
+
+    nmonCommands.status();
+};
+
+
+/**
+ *
+ *  SUPPORTED METHOD - GET
+ * Update , there is no need to provide the location of this package. Also since we are moving away
+ * from nmon, the only thing required is frequency and if graphite needs to be enabled.
+ * Until the monitoring is explicity disabled,
+ * we will just have vmstat runnin in the background wrapped in a shell script
+ * @param {object} req - request object
+ * @param {object} res - response object
+ *
+ * Handles &lt;strong>/nmon/activate?frequency=x&graphite=true|false&lt;/strong> requests
+ *
+ *
+ *
+ * &lt;strike>
+ * We are handling the activate request in two ways
+ * &lt;ul>
+ *     &lt;li> For a HTTP GET Request, by default frequency is 10s, samples is 8640 (1D) and graphite is turned ON,
+ *     the default location of automation framework is /opt/performance-automation-framework
+ *     &lt;li> For HTTP POST Request, all of the below fields can be used to override default values
+ * &lt;/ul>
+ *
+ * @param {object} req - request object
+ * @param {object} res - response object
+ *
+ * Handles &lt;strong>/nmon/activate&lt;/strong> requests
+ *
+ *
+ * @param {object} req.body -
+ *                           &lt;pre>&lt;code>
+ *                           {
+ *                              "af":
+ *                                  {
+ *                                      "location" : "/opt/performance-automation-framework",
+ *                                      "nmon":
+ *                                          {
+ *                                              "frequency" : x,
+ *                                              "samples"   : y,
+ *                                              "graphite   : true   //enable = true , disable = false
+ *
+ *                                          }
+ *                                  }
+ *                            }
+ *                            &lt;/code>&lt;/pre>
+ * &lt;/strike>
+ */
+exports.activate = function(req,res) {
+    var nmonCommands = new NmonCommands(req,res);
+
+    nmonCommands.activate();
+};
+
+
+/**
+ * SUPPORTED METHOD - GET
+ *
+ * The replacement would be just a simple get request that kills the vmstat process
+ *
+ * &lt;strike>
+ * Handles &lt;strong>/nmon/deactivate&lt;/strong> requests and kills all existing nmon and parsible instances
+ *
+ * We are handling the status requests in two ways
+ * &lt;li>
+ *     &lt;ul> if it's a HTTP GET request the automation framework location on the host machine is assumed to be
+ *      &lt;strong>"location": "/opt/performance-automation"&lt;/strong>&lt;/ul>
+ *     &lt;ul> if it's a HTTP POST Request the location is picked up from req.body.af.location property.
+ *      &lt;span style="color:red">&lt;strong> an incorrect location would throw an error&lt;/strong>&lt;/span>&lt;/ul>
+ * &lt;/li>
+ *
+ *
+ *
+ * @param {object} req - request object
+ * @param {object} res - response object
+ *
+ * @param {object} req.body -
+ *                           &lt;pre>&lt;code>
+ *                           {
+ *                              "af":
+ *                                  {
+ *                                      "location": "/opt/performance-automation-framework"
+ *                                  }
+ *                            }
+ *                            &lt;/code>&lt;/pre>
+ *
+ * &lt;/strike>
+ */
+
+exports.stop = function(req,res) {
+    var nmonCommands = new NmonCommands(req,res);
+
+    nmonCommands.deactivate();
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="JmeterManager.html">JmeterManager</a></li><li><a href="JmonCommands.html">JmonCommands</a></li><li><a href="ManageXmlTemplate.html">ManageXmlTemplate</a></li><li><a href="NmonCommands.html">NmonCommands</a></li><li><a href="NodeMonCommands.html">NodeMonCommands</a></li><li><a href="global.html#RemoteExec">RemoteExec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_">_</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#cpu">cpu</a></li><li><a href="global.html#deactivate">deactivate</a></li><li><a href="global.html#details">details</a></li><li><a href="global.html#emitLines">emitLines</a></li><li><a href="global.html#exec">exec</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#getList">getList</a></li><li><a href="global.html#https">https</a></li><li><a href="global.html#log4js">log4js</a></li><li><a href="global.html#memory">memory</a></li><li><a href="global.html#os">os</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#servicelist">servicelist</a></li><li><a href="global.html#status">status</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#util">util</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Nov 19 2014 14:50:36 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

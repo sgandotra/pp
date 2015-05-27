@@ -1,0 +1,8 @@
+
+"use strict;"
+
+exports.defaultHandler = function(err,req,res,next) {
+    res.status(500);
+    res.send({'error' : err.message });
+}
+

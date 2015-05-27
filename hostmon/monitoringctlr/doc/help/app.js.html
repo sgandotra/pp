@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: app.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: app.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>'use strict';
+/**
+ * Module dependencies.
+ *
+ *
+ * @Description :
+ *
+ * &lt;pre>
+ * .response       = {
+ *       status : SUCCESS|ERROR|INTERNAL_ERROR,
+*       timestamp : new Date(),
+ *       description : (usually error.toString() for failure)
+ *   };
+ * &lt;/pre>
+ *
+ * SUCCESS = successful completion
+ * ERROR   = Invalid payload , description should give more details
+ * INTERNAL_ERROR = something unexpected, internal to the application, probably a bug. See description for details.
+ *
+ * In all cases an error would a HTTP 500, and SUCCESS should be a HTTP 200 OK.
+ *
+ */
+
+var express = require('express')
+  , routes = require('./routes')
+  , user = require('./routes/user')
+  , services = require('./routes/services')
+  , servicelist = require('./routes/servicelist')
+  , system = require('./routes/system')
+  , nmon = require('./routes/nmon')
+  , jmon = require('./routes/jmon')
+  , nodemon = require('./routes/nodemon')
+  , mon  = require('./js/nodemon')
+  , http = require('http')
+  , path = require('path')
+  , log4js = require('log4js')
+  , jmeter = require('./routes/jmeter')
+  , git    = require('./routes/git')
+  , errorHandler = require('./middleware/errorhandler');
+
+
+log4js.configure({
+	appenders: [
+		{ type: 'console' },
+		{ type: 'file',filename: __dirname + '/logs/monitoringctlr.log' , "maxLogSize": 20480, "backups": 3 }
+	],
+	"replaceConsole" : true
+
+});
+
+var logger = log4js.getLogger(),
+    app = express();
+
+logger.setLevel("info");
+
+app.configure(function(){
+  app.set('port', process.env.PORT || 3000);
+  app.set('views', __dirname + '/views');
+  app.set('view engine', 'jade');
+  app.use(express.favicon());
+  app.use(log4js.connectLogger(logger, { level: 'auto' }));
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());
+  app.use(app.router);
+  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.static(path.join(__dirname,'doc')));
+});
+
+app.configure('development', function(){
+  app.use(errorHandler.defaultHandler);
+  app.locals.pretty = true;
+  //mon.graphite();
+
+});
+
+//monitoring urls
+app.get('/nmon/status',nmon.status);
+app.get('/nmon/activate',nmon.activate);
+app.get('/nmon/deactivate',nmon.stop);
+
+
+app.get('/', routes.index);
+app.get('/servicedetails',servicelist.servicelist);
+app.get('/services/list',services.list);
+app.get('/java/statpid/:servicename',services.getpid);
+app.get('/appstat/:list',services.appstat);
+app.get('/java/servicepids',services.javarestart);
+app.get('/java/meminfo',services.meminfo);
+app.get('/users', user.list);
+app.get('/system/details',system.list);
+app.post('/jmon/activate',jmon.activate);
+app.post('/jmon/deactivate',jmon.deactivate);
+app.post('/jmon/status',jmon.status);
+app.post('/nodemon/activate',nodemon.activate);
+app.post('/nodemon/deactivate',nodemon.deactivate);
+app.post('/nodemon/status',nodemon.status);
+app.post('/jmeter/configure/:action',jmeter.configure);
+app.get('/jmeter/data/:id',jmeter.getData);
+app.delete('/jmeter/configure/:id',jmeter.delete);
+/**
+ * jmeter apis
+ */
+app.get('/git/details/:username/:reponame',git.details);
+app.get('/git/list',git.getList);
+app.get('/git/clone',git.clone);
+
+
+http.createServer(app).listen(app.get('port'), function(){
+  console.log("Express server listening on port " + app.get('port'));
+  logger.info("Server started");
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="JmeterManager.html">JmeterManager</a></li><li><a href="JmonCommands.html">JmonCommands</a></li><li><a href="ManageXmlTemplate.html">ManageXmlTemplate</a></li><li><a href="NmonCommands.html">NmonCommands</a></li><li><a href="NodeMonCommands.html">NodeMonCommands</a></li><li><a href="global.html#RemoteExec">RemoteExec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_">_</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#clone">clone</a></li><li><a href="global.html#cpu">cpu</a></li><li><a href="global.html#deactivate">deactivate</a></li><li><a href="global.html#details">details</a></li><li><a href="global.html#emitLines">emitLines</a></li><li><a href="global.html#exec">exec</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#getList">getList</a></li><li><a href="global.html#https">https</a></li><li><a href="global.html#log4js">log4js</a></li><li><a href="global.html#memory">memory</a></li><li><a href="global.html#os">os</a></li><li><a href="global.html#path">path</a></li><li><a href="global.html#servicelist">servicelist</a></li><li><a href="global.html#status">status</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#util">util</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Nov 19 2014 14:50:36 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

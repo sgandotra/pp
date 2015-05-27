@@ -1,0 +1,4 @@
+#every hour cleanup after nmon, and then restart it
+0 * * * * /x/opt/performance-automation-framework/Tools/NMON/clean.sh /x/opt/performance-automation-framework/working/nmon/daemon
+1 * * * * /x/opt/performance-automation-framework/Tools/NMON/run.sh -s 720 -f 5 -o /x/opt/performance-automation-framework/working/nmon/daemon -g
+

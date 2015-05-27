@@ -1,0 +1,76 @@
+<JMXAgentConfigs>
+
+	<DefaultMBeansToCollectMetrics>
+		<MBean name="java.lang:type=Threading">
+			<Attributes>
+				<Attribute name="ThreadCount"/>
+			</Attributes>
+		</MBean>
+		<MBean name="java.lang:type=ClassLoading">
+			<Attributes>
+				<Attribute name="TotalLoadedClassCount"/>
+			</Attributes>
+		</MBean>
+		<MBean name="java.lang:type=Memory">
+			<Attributes>
+				<Attribute name="HeapMemoryUsage.used"/>
+			</Attributes>
+		</MBean>
+        <MBean name="java.lang:type=OperatingSystem">
+            <Attributes>
+                <Attribute name="OpenFileDescriptorCount"/>
+                <Attribute name="MaxFileDescriptorCount"/>
+            </Attributes>
+        </MBean>
+        <MBean name="jboss.web:type=ThreadPool,name=http--127.0.0.1-11536">
+            <Attributes>
+                <Attribute name="maxThreads"/>
+                <Attribute name="running"/>
+                <Attribute name="backlog"/>
+                <Attribute name="currentThreadsBusy"/>
+                <Attribute name="currentThreadCount"/>
+            </Attributes>
+        </MBean>
+        <MBean name="jboss.web:type=ThreadPool,name=http--0.0.0.0-11538">
+            <Attributes>
+                <Attribute name="maxThreads"/>
+                <Attribute name="running"/>
+                <Attribute name="backlog"/>
+                <Attribute name="currentThreadsBusy"/>
+                <Attribute name="currentThreadCount"/>
+            </Attributes>
+        </MBean>
+        <MBean name="java.lang:type=GarbageCollector,name=ParNew">
+            <Attributes>
+                <Attribute name="CollectionCount"/>
+                <Attribute name="CollectionTime"/>
+            </Attributes>
+        </MBean>
+        <MBean name="java.lang:type=GarbageCollector,name=ConcurrentMarkSweep">
+            <Attributes>
+                <Attribute name="CollectionTime"/>
+                <Attribute name="CollectionCount"/>
+            </Attributes>
+        </MBean>
+	</DefaultMBeansToCollectMetrics>
+	
+	<JMXAgentConfig>
+		<AppName>spartabaseframework</AppName>
+		<AppPort>1999</AppPort>
+        
+        <!-- use this format for Jboss based application -->
+        <JMXServiceURL>service:jmx:remoting-jmx://@STAGE:11539</JMXServiceURL> 
+
+        <!-- use this format for Geronimo based applications -->
+		<!-- <JMXServiceURL>service:jmx:rmi:///jndi/rmi://@STAGE:10781/JMXConnector</JMXServiceURL> -->
+
+		<Username>system</Username>
+		<Password>manager</Password>
+		<ConnectTimeout>3000</ConnectTimeout> 
+		<MetricsPingInterval>5000</MetricsPingInterval>
+		<MetricsEndPointType>Graphite</MetricsEndPointType>
+		<MetricsOutputFileName>/x/opt/performance-automation-framework/working/jmonitor/spartabaseframework</MetricsOutputFileName>
+		<MetricsCollectorAddress>stage2lp48.qa.paypal.com:2003</MetricsCollectorAddress>
+	</JMXAgentConfig>
+
+</JMXAgentConfigs>
